@@ -179,8 +179,12 @@ function gcm_pre_send_cf7_email_insert_attachments( $cf7 ) {
 		$loc = $_POST['location'];
 		if ($loc == "1513V") {
 			$FulLoc = "Location: 1513 Voorhies Ave 3rd Floor, Brooklyn, NY 11235";
+		} else if ($loc == "51SN") {
+			$FulLoc = "Location: 51 Saint Nicholas Ave, Ground Floor, New York, NY 10026";
 		} else if ($loc == "68E") {
-			$FulLoc = "Location: 68e 131st Street Suite 100, New York, NY 10037";
+			// Old Address
+			// $FulLoc = "Location: 68e 131st Street Suite 100, New York, NY 10037";
+			$FulLoc = "Location: 51 Saint Nicholas Ave, Ground Floor, New York, NY 10026";
 		} else {
 			$FulLoc = "No location selected";
 		}

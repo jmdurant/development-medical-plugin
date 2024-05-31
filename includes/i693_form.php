@@ -8,7 +8,8 @@
  * https://greatcitymedical.com/i693form/?date1=Today&time=11-42-AM
  *
  * With specific date:
- * https://greatcitymedical.com/i693form/?date1=2024-01-03&time=12%3A20%20PM&location=68E
+ * https://greatcitymedical.com/i693form/?date1=2024-01-03&time=12%3A20%20PM&location=68E (old address)
+ * https://greatcitymedical.com/i693form/?date1=2023-07-19&time=12%3A50%20PM&location=51SN
  *
  * With custom expiration date and time:
  * https://greatcitymedical.com/i693form/?date1=Today&time=11-42-AM&expd=2024-01-03&expt=12%3A20%20PM
@@ -154,7 +155,7 @@ function get_i693_appointment_message( $use_form_value = false ) {
 	// Get the date, time, and location.
 	$date = isset($_GET['date1']) ? stripslashes($_GET['date1']) : false; // "2024-01-03"
 	$time = isset($_GET['time']) ? stripslashes($_GET['time']) : false; // "12:20 PM"
-	$location = isset($_GET['location']) ? stripslashes($_GET['location']) : false; // "1513V" or "68E"
+	$location = isset($_GET['location']) ? stripslashes($_GET['location']) : false; // "1513V" or "51SN" (old: "68E")
 	if ( !$date && !$time && !$location ) return false;
 	
 	// Format the date as m/d/Y
@@ -178,7 +179,13 @@ function get_i693_appointment_message( $use_form_value = false ) {
 	
 	$address = '';
 	if ( $location == '1513V' ) $address = '1513 Voorhies Ave 3rd Floor, Brooklyn, NY 11235';
-	if ( $location == '68E' ) $address = '68e 131st Street Suite 100, New York, NY 10037';
+	if ( $location == '51SN' ) $address = '51 Saint Nicholas Ave, Ground Floor, New York, NY 10026';
+	
+	// Old address links
+	if ( $location == '68E' ) {
+		// $address = '68e 131st Street Suite 100, New York, NY 10037';
+		$address = '51 Saint Nicholas Ave, Ground Floor, New York, NY 10026';
+	}
 	
 	$tags = array(
 		'[date1]' => $date,
@@ -200,7 +207,7 @@ function get_i693_appointment_message( $use_form_value = false ) {
  *
  *  Appointment link example:
  *  (live)    https://greatcitymedical.com/i693form/?date1=2024-01-03&time=12%3A20%20PM&location=68E&exp=2024-01-06-14:00:00&debug
- *  (staging) https://greatcitymedical.radgh.com/i693form/?date1=2024-01-03&time=12%3A20%20PM&location=68E&exp=2024-01-06-14:00:00&debug
+ *  (staging) https://greatcitymedical.com/i693form/?date1=2024-01-03&time=12%3A20%20PM&location=68E&exp=2024-01-06-14:00:00&debug
  *
  * @param $atts
  * @param $content
