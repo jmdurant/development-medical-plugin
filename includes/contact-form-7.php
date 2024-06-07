@@ -122,22 +122,22 @@ function gcm_pre_send_cf7_email_insert_attachments( $cf7 ) {
 <!--Patient's email -->";
 		$output2 .= "<!--The text below is for Form prefill -->
 <Pt7Line2_MedPracticeName>Great City Medical</Pt7Line2_MedPracticeName>
-<Pt7Line3_StreetNumberName>68 E 131st Street</Pt7Line3_StreetNumberName>
-<Pt7Line3_AptSteFlrNumber>100</Pt7Line3_AptSteFlrNumber>
+<Pt7Line3_StreetNumberName>51 Saint Nicholas Ave</Pt7Line3_StreetNumberName>
+<Pt7Line3_AptSteFlrNumber></Pt7Line3_AptSteFlrNumber>
 <Pt7Line3_CityOrTown>New York</Pt7Line3_CityOrTown>
 <Pt7Line3_State>NY</Pt7Line3_State>
-<Pt7Line3_ZipCode>10037</Pt7Line3_ZipCode>
-<Pt7Line4_StreetNumberName>68 E 131st Street</Pt7Line4_StreetNumberName>
-<Pt7Line4_AptSteFlrNumber>100</Pt7Line4_AptSteFlrNumber>
+<Pt7Line3_ZipCode>10026</Pt7Line3_ZipCode>
+<Pt7Line4_StreetNumberName>51 Saint Nicholas Ave</Pt7Line4_StreetNumberName>
+<Pt7Line4_AptSteFlrNumber></Pt7Line4_AptSteFlrNumber>
 <Pt7Line4_CityOrTown>New York</Pt7Line4_CityOrTown>
 <Pt7Line4_State>NY</Pt7Line4_State>
-<Pt7Line4_ZipCode>10037</Pt7Line4_ZipCode>
+<Pt7Line4_ZipCode>10026</Pt7Line4_ZipCode>
 <Pt7Line5_DaytimePhone>2122818600</Pt7Line5_DaytimePhone>
 <Pt7Line7_EmailAddress>admin@greatcitymedical.com</Pt7Line7_EmailAddress>
 <Pt8Line1B1a_name>RPR</Pt8Line1B1a_name>
 <Pt8Line1C1a_name>NG Urine PCR</Pt8Line1C1a_name>
 <Pt10Line1_NotAge1>1</Pt10Line1_NotAge1>
-<Pt10Line3_NotAge3>1</Pt10Line3_NotAge3>
+<Pt10Line3_NotAge3>0</Pt10Line3_NotAge3>
 <Pt10Line5_NotAge5>1</Pt10Line5_NotAge5>
 <Pt10Line8_NotAge8>1</Pt10Line8_NotAge8>
 <Pt10Line10_NotAge10>1</Pt10Line10_NotAge10>
@@ -145,8 +145,8 @@ function gcm_pre_send_cf7_email_insert_attachments( $cf7 ) {
 <Pt10Line12_NotAge12>1</Pt10Line12_NotAge12>
 <Pt10Line9_InfluVaccineInsufficient9>1</Pt10Line9_InfluVaccineInsufficient9>
 <P10_Remarks>Currently not flu season.</P10_Remarks>
-<Pt7Line3_Unit> STE </Pt7Line3_Unit>
-<Pt7Line4_Unit> STE </Pt7Line4_Unit>
+<Pt7Line3_Unit></Pt7Line3_Unit>
+<Pt7Line4_Unit></Pt7Line4_Unit>
 <Pt8Line2A_Disorders>1</Pt8Line2A_Disorders>
 <Pt8Line1D1_Findings>a</Pt8Line1D1_Findings>
 <Pt8Line3A_Findings>1</Pt8Line3A_Findings>
