@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Move the order forms page added by ZM Order Forms to the Great City Medical menu.
+ * Move the order forms page added by ZM Order Forms to the Developmental On Demand menu.
  *
  * @param array $page {
  *      @type string        $page_title

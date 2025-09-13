@@ -4,10 +4,10 @@
  * Register the theme's top-level options page
  */
 function gcm_register_options_pages() {
-	// Great City Medical Main page
+	// Developmental On Demand Main page
 	add_menu_page(
 		null,
-		__( 'Great City Medical', 'gcm' ),
+		__( 'Developmental On Demand', 'gcm' ),
 		'manage_options',
 		'acf-gcm-settings',
 		'gcm_display_general_settings_page',
@@ -27,7 +27,7 @@ function gcm_register_options_pages() {
 	
 	/*
 	// Add other sub options pages
-	// Great City Medical -> Icons
+	// Developmental On Demand -> Icons
 	add_submenu_page(
 		'acf-gcm-settings', // $parent, // 'acf-gcm-root',
 		'Icons',
@@ -51,7 +51,7 @@ function gcm_register_acf_options_pages() {
 	if ( ! function_exists('acf_add_options_sub_page') ) return;
 	
 	// ACF options page to let us add acf fields to that page
-	// Great City Medical -> General Settings
+	// Developmental On Demand -> General Settings
 	// get_field( 'xxx', 'gcm_settings' );
 	acf_add_options_sub_page(array(
 		'parent_slug' => 'acf-gcm-root', // $parent, // 'acf-gcm-root',

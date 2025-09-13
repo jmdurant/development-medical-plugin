@@ -22,11 +22,11 @@ function gcm_pre_send_cf7_email_insert_attachments( $cf7 ) {
 	if ($form_id === 3170) {
 		
 		$to = $cf7->mail['recipient']; // same recipient as mail(1)
-		// $to = "admin@greatcitymedical.com,i693@greatcitymedical.com";
+		// $to = "durant@developmentalondemand.com,i693@developmentalondemand.com";
 		// $to = "malikkamranrashid@gmail.com";
 		
 		$headers = array( "From: " . $cf7->mail['sender'] );
-		// $headers = "From: Great City Medical <noreply@greatcitymedical.com>" . "\r\n";
+		// $headers = "From: Developmental On Demand <noreply@developmentalondemand.com>" . "\r\n";
 		
 		$originalDate = $_POST['dob'];
 		$newDate = date("m/d/Y", strtotime($originalDate));
@@ -121,7 +121,7 @@ function gcm_pre_send_cf7_email_insert_attachments( $cf7 ) {
 <Pt2Line5_EmailAddress>" . $_POST['Emailaddres'] . "</Pt2Line5_EmailAddress>
 <!--Patient's email -->";
 		$output2 .= "<!--The text below is for Form prefill -->
-<Pt7Line2_MedPracticeName>Great City Medical</Pt7Line2_MedPracticeName>
+<Pt7Line2_MedPracticeName>Developmental On Demand</Pt7Line2_MedPracticeName>
 <Pt7Line3_StreetNumberName>51 Saint Nicholas Ave</Pt7Line3_StreetNumberName>
 <Pt7Line3_AptSteFlrNumber></Pt7Line3_AptSteFlrNumber>
 <Pt7Line3_CityOrTown>New York</Pt7Line3_CityOrTown>
@@ -133,7 +133,7 @@ function gcm_pre_send_cf7_email_insert_attachments( $cf7 ) {
 <Pt7Line4_State>NY</Pt7Line4_State>
 <Pt7Line4_ZipCode>10026</Pt7Line4_ZipCode>
 <Pt7Line5_DaytimePhone>2122818600</Pt7Line5_DaytimePhone>
-<Pt7Line7_EmailAddress>admin@greatcitymedical.com</Pt7Line7_EmailAddress>
+<Pt7Line7_EmailAddress>durant@developmentalondemand.com</Pt7Line7_EmailAddress>
 <Pt8Line1B1a_name>RPR</Pt8Line1B1a_name>
 <Pt8Line1C1a_name>NG Urine PCR</Pt8Line1C1a_name>
 <Pt10Line1_NotAge1>1</Pt10Line1_NotAge1>

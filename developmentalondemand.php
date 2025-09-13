@@ -1,10 +1,10 @@
 <?php
 /*
-Plugin Name: * Great City Medical
-Description: Custom features for Great City Medical, which adds custom attachments sent with Contact Form 7, custom shortcodes, and form validation methods.
+Plugin Name: * Developmental On Demand
+Description: Custom features for Developmental On Demand, which adds custom attachments sent with Contact Form 7, custom shortcodes, and form validation methods.
 Version: 1.2.1
-Author: Radley Sustaire
-Author URI: https://radleysustaire.com/
+Author: James DuRant
+Author URI: https://developmentalondemand.com/
 */
 
 define( 'GCM_URL', untrailingslashit(plugin_dir_url( __FILE__ )) );

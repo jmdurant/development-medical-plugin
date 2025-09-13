@@ -1,21 +1,21 @@
-Great City Medical Plugin
+Developmental On Demand Plugin
 -
 
-A custom WordPress plugin for Great City Medical.
+A custom WordPress plugin for Developmental On Demand.
 
-Includes custom features for Great City Medical, which adds custom attachments sent with Contact Form 7, custom shortcodes, and form validation methods.
+Includes custom features for Developmental On Demand, which adds custom attachments sent with Contact Form 7, custom shortcodes, and form validation methods.
 
-Built by Radley Sustaire, using PHPStorm.
+Built by James DuRant, using PHPStorm.
 
 ## Quick Links
 
-- Great City Medical - Theme:
+- Developmental On Demand - Theme:
 
-   https://github.com/RadGH/great-city-medical-theme
+   https://github.com/jmdurant/development-medical-theme
 
-- Great City Medical - Plugin:
+- Developmental On Demand - Plugin:
 
-   https://github.com/RadGH/great-city-medical-plugin
+   https://github.com/jmdurant/development-medical-plugin
 
 ## Build process
 
