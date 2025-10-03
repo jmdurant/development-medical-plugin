@@ -29,7 +29,8 @@ function gcm_process_vanderbilt_form( $cf7 ) {
 	// TODO: Replace XXXX with your Vanderbilt form ID
 	if ( $form_id === XXXX ) {
 
-		$to = $cf7->mail['recipient'];
+		// Send results to admin, not to the person who filled out the form
+		$to = 'admin@developmentalondemand.com'; // TODO: Update with your admin email
 		$headers = array( "From: " . $cf7->mail['sender'] );
 
 		// Student identifiers
