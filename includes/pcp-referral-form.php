@@ -22,8 +22,9 @@ function gcm_process_pcp_referral_form( $cf7 ) {
 	// TODO: Replace XXXX with your actual Contact Form 7 form ID
 	if ( $form_id === XXXX ) {
 
-		// Send to admin email, not to the referring physician
-		$to = 'admin@developmentalondemand.com'; // TODO: Update with your admin email
+		// Get admin email from ACF settings
+		$admin_email = get_field('primary_email', 'option') ?: 'admin@developmentalondemand.com';
+		$to = $admin_email;
 		$headers = array( "From: " . $cf7->mail['sender'] );
 
 		// Patient identifiers
@@ -75,12 +76,13 @@ function gcm_process_pcp_referral_form( $cf7 ) {
 		wp_mail( $to, $subject, $body, $headers, $attachments );
 
 		// Send confirmation to referring physician
+		$practice_fax = get_field('primary_fax', 'option') ?: '(XXX) XXX-XXXX';
 		$physician_confirmation_subject = "Referral Received - {$patient_first} {$patient_last}";
 		$physician_confirmation_body = "Dear Dr. {$physician_name},\n\n";
 		$physician_confirmation_body .= "Thank you for referring {$patient_first} {$patient_last} to Developmental On Demand for evaluation.\n\n";
 		$physician_confirmation_body .= "We have received your referral and will contact the family to schedule an appointment.\n\n";
 		$physician_confirmation_body .= "If you have not already done so, please fax medical records and relevant documentation to:\n";
-		$physician_confirmation_body .= "Fax: (XXX) XXX-XXXX\n\n"; // TODO: Update with your fax number
+		$physician_confirmation_body .= "Fax: {$practice_fax}\n\n";
 		$physician_confirmation_body .= "We will send you a copy of our evaluation report once completed.\n\n";
 		$physician_confirmation_body .= "Best regards,\n";
 		$physician_confirmation_body .= "Developmental On Demand\n";

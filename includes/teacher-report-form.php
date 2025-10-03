@@ -23,8 +23,9 @@ function gcm_process_teacher_report_form( $cf7 ) {
 	// TODO: Replace XXXX with your actual Contact Form 7 form ID
 	if ( $form_id === XXXX ) {
 
-		// Send to admin email, not to the person who filled out the form
-		$to = 'admin@developmentalondemand.com'; // TODO: Update with your admin email
+		// Get admin email from ACF settings
+		$admin_email = get_field('primary_email', 'option') ?: 'admin@developmentalondemand.com';
+		$to = $admin_email;
 		$headers = array( "From: " . $cf7->mail['sender'] );
 
 		// Student identifiers

@@ -25,8 +25,9 @@ function gcm_process_developmental_eval_form( $cf7 ) {
 	// Find this in WordPress Admin → Contact → Contact Forms
 	if ( $form_id === XXXX ) {
 
-		// Send to admin email, not to the person who filled out the form
-		$to = 'admin@developmentalondemand.com'; // TODO: Update with your admin email
+		// Get admin email from ACF settings
+		$admin_email = get_field('primary_email', 'option') ?: 'admin@developmentalondemand.com';
+		$to = $admin_email;
 		$headers = array( "From: " . $cf7->mail['sender'] );
 
 		// Format dates
