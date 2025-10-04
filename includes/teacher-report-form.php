@@ -20,8 +20,13 @@ add_action( 'wpcf7_before_send_mail', 'gcm_process_teacher_report_form' );
 function gcm_process_teacher_report_form( $cf7 ) {
 	$form_id = $cf7->id;
 
-	// TODO: Replace XXXX with your actual Contact Form 7 form ID
-	if ( $form_id === XXXX ) {
+	// Get form ID from options (set by form installer)
+	$target_form_id = get_option( 'gcm_teacher_report_form_id' );
+	if ( ! $target_form_id ) {
+		return; // Form not installed yet
+	}
+
+	if ( $form_id == $target_form_id ) {
 
 		// Get admin email from ACF settings
 		$admin_email = get_field('primary_email', 'option') ?: 'admin@developmentalondemand.com';
