@@ -168,9 +168,17 @@ function gcm_create_cf7_form( $title, $template ) {
  * @return int|WP_Error Page ID or error
  */
 function gcm_create_form_page( $title, $form_id, $form_key ) {
-    // Check if page already exists
-    $existing_page = get_page_by_path( $form_key );
+    // Use a unique slug prefix to avoid conflicts with existing pages
+    $page_slug = 'form-' . $form_key;
+
+    // Check if page already exists by slug
+    $existing_page = get_page_by_path( $page_slug );
     if ( $existing_page ) {
+        // Update existing page content with current form ID
+        wp_update_post( array(
+            'ID' => $existing_page->ID,
+            'post_content' => '[contact-form-7 id="' . $form_id . '"]',
+        ) );
         return $existing_page->ID;
     }
 
@@ -178,7 +186,7 @@ function gcm_create_form_page( $title, $form_id, $form_key ) {
     $page_id = wp_insert_post( array(
         'post_type' => 'page',
         'post_title' => $title,
-        'post_name' => $form_key,
+        'post_name' => $page_slug,
         'post_status' => 'publish',
         'post_content' => '[contact-form-7 id="' . $form_id . '"]',
     ) );
