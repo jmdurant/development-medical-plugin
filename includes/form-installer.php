@@ -84,12 +84,15 @@ function gcm_install_evaluation_forms() {
 
             // Create a page for this form
             $page_id = gcm_create_form_page( $form_data['title'], $form_id, $form_key );
-            if ( ! is_wp_error( $page_id ) ) {
+            if ( is_wp_error( $page_id ) ) {
+                $results['errors'][] = 'Failed to create page for ' . $form_data['title'] . ': ' . $page_id->get_error_message();
+            } elseif ( $page_id ) {
                 // Store page ID in options for linking
                 update_option( $form_data['option_key'] . '_page', $page_id );
+                $results['forms_created'][] = $form_data['title'] . ' (Form ID: ' . $form_id . ', Page ID: ' . $page_id . ')';
+            } else {
+                $results['errors'][] = 'Failed to create page for ' . $form_data['title'] . ' (unknown error)';
             }
-
-            $results['forms_created'][] = $form_data['title'] . ' (Form ID: ' . $form_id . ', Page ID: ' . $page_id . ')';
         }
     }
 
