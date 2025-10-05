@@ -58,31 +58,35 @@ function gcm_install_evaluation_forms() {
     foreach ( $forms as $form_key => $form_data ) {
         // Check if form already exists
         $existing_form_id = get_option( $form_data['option_key'] );
+        $form_id = null;
 
         if ( $existing_form_id && get_post( $existing_form_id ) ) {
-            $results['forms_skipped'][] = $form_data['title'] . ' (already exists)';
-            continue;
-        }
-
-        // Get form template
-        $template_function = $form_data['template'];
-        if ( ! function_exists( $template_function ) ) {
-            $results['errors'][] = 'Template function not found: ' . $template_function;
-            continue;
-        }
-
-        $template = call_user_func( $template_function );
-
-        // Create the form
-        $form_id = gcm_create_cf7_form( $form_data['title'], $template );
-
-        if ( is_wp_error( $form_id ) ) {
-            $results['errors'][] = $form_data['title'] . ': ' . $form_id->get_error_message();
+            $results['forms_skipped'][] = $form_data['title'] . ' (form already exists)';
+            $form_id = $existing_form_id;
         } else {
-            // Save form ID to options
-            update_option( $form_data['option_key'], $form_id );
+            // Get form template
+            $template_function = $form_data['template'];
+            if ( ! function_exists( $template_function ) ) {
+                $results['errors'][] = 'Template function not found: ' . $template_function;
+                continue;
+            }
 
-            // Create a page for this form
+            $template = call_user_func( $template_function );
+
+            // Create the form
+            $form_id = gcm_create_cf7_form( $form_data['title'], $template );
+
+            if ( is_wp_error( $form_id ) ) {
+                $results['errors'][] = $form_data['title'] . ': ' . $form_id->get_error_message();
+                continue;
+            } else {
+                // Save form ID to options
+                update_option( $form_data['option_key'], $form_id );
+            }
+        }
+
+        // Create a page for this form (even if form already existed)
+        if ( $form_id ) {
             $page_id = gcm_create_form_page( $form_data['title'], $form_id, $form_key );
             if ( is_wp_error( $page_id ) ) {
                 $results['errors'][] = 'Failed to create page for ' . $form_data['title'] . ': ' . $page_id->get_error_message();
