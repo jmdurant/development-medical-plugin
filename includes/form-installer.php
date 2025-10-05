@@ -81,7 +81,15 @@ function gcm_install_evaluation_forms() {
         } else {
             // Save form ID to options
             update_option( $form_data['option_key'], $form_id );
-            $results['forms_created'][] = $form_data['title'] . ' (ID: ' . $form_id . ')';
+
+            // Create a page for this form
+            $page_id = gcm_create_form_page( $form_data['title'], $form_id, $form_key );
+            if ( ! is_wp_error( $page_id ) ) {
+                // Store page ID in options for linking
+                update_option( $form_data['option_key'] . '_page', $page_id );
+            }
+
+            $results['forms_created'][] = $form_data['title'] . ' (Form ID: ' . $form_id . ', Page ID: ' . $page_id . ')';
         }
     }
 
@@ -149,6 +157,33 @@ function gcm_create_cf7_form( $title, $template ) {
     $contact_form->save();
 
     return $form_id;
+}
+
+/**
+ * Create a page for a form
+ *
+ * @param string $title Page title
+ * @param int $form_id CF7 form ID
+ * @param string $form_key Form key for slug
+ * @return int|WP_Error Page ID or error
+ */
+function gcm_create_form_page( $title, $form_id, $form_key ) {
+    // Check if page already exists
+    $existing_page = get_page_by_path( $form_key );
+    if ( $existing_page ) {
+        return $existing_page->ID;
+    }
+
+    // Create page with form shortcode
+    $page_id = wp_insert_post( array(
+        'post_type' => 'page',
+        'post_title' => $title,
+        'post_name' => $form_key,
+        'post_status' => 'publish',
+        'post_content' => '[contact-form-7 id="' . $form_id . '"]',
+    ) );
+
+    return $page_id;
 }
 
 /**
