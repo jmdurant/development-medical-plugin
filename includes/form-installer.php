@@ -180,11 +180,19 @@ function gcm_create_form_page( $title, $form_id, $form_key ) {
 
     // Check if page already exists by slug
     $existing_page = get_page_by_path( $page_slug );
+
+    // Create page content with constrained container
+    $page_content = '<!-- wp:group {"layout":{"type":"constrained"}} -->
+<div class="wp-block-group">
+[contact-form-7 id="' . $form_id . '"]
+</div>
+<!-- /wp:group -->';
+
     if ( $existing_page ) {
         // Update existing page content with current form ID
         wp_update_post( array(
             'ID' => $existing_page->ID,
-            'post_content' => '[contact-form-7 id="' . $form_id . '"]',
+            'post_content' => $page_content,
         ) );
         return $existing_page->ID;
     }
@@ -195,7 +203,7 @@ function gcm_create_form_page( $title, $form_id, $form_key ) {
         'post_title' => $title,
         'post_name' => $page_slug,
         'post_status' => 'publish',
-        'post_content' => '[contact-form-7 id="' . $form_id . '"]',
+        'post_content' => $page_content,
     ) );
 
     return $page_id;
@@ -223,6 +231,15 @@ function gcm_get_developmental_eval_form_template() {
             </div>
         </div>
 
+        <div class="field type-text">
+            <div class="field-label">
+                <label for="child-middle-name">Middle Name</label>
+            </div>
+            <div class="field-content">
+                [text child_middle_name id:child-middle-name class:letters_space]
+            </div>
+        </div>
+
         <div class="field type-text is-required">
             <div class="field-label">
                 <label for="child-last-name">Child\'s Last Name</label>
@@ -238,6 +255,33 @@ function gcm_get_developmental_eval_form_template() {
             </div>
             <div class="field-content">
                 [date* child_dob id:child-dob]
+            </div>
+        </div>
+
+        <div class="field type-select is-required">
+            <div class="field-label">
+                <label for="child-gender">Gender</label>
+            </div>
+            <div class="field-content">
+                [select* child_gender id:child-gender "Male" "Female" "Other" "Prefer not to say"]
+            </div>
+        </div>
+
+        <div class="field type-text is-required">
+            <div class="field-label">
+                <label for="grade-level">Current Grade Level</label>
+            </div>
+            <div class="field-content">
+                [text* grade_level id:grade-level placeholder "e.g., Kindergarten, 1st, 2nd"]
+            </div>
+        </div>
+
+        <div class="field type-text is-required">
+            <div class="field-label">
+                <label for="school-name">School Name</label>
+            </div>
+            <div class="field-content">
+                [text* school_name id:school-name]
             </div>
         </div>
     </div>
@@ -268,7 +312,7 @@ function gcm_get_developmental_eval_form_template() {
 
 <div class="field-group field-list">
     <div class="group-label">Parent/Guardian Information</div>
-    <div class="group-fields group-columns-3">
+    <div class="group-fields group-columns-2">
         <div class="field type-text is-required">
             <div class="field-label">
                 <label for="parent-first-name">Parent/Guardian First Name</label>
@@ -287,6 +331,15 @@ function gcm_get_developmental_eval_form_template() {
             </div>
         </div>
 
+        <div class="field type-select is-required">
+            <div class="field-label">
+                <label for="relationship">Relationship to Child</label>
+            </div>
+            <div class="field-content">
+                [select* relationship id:relationship "Mother" "Father" "Grandmother" "Grandfather" "Legal Guardian" "Other"]
+            </div>
+        </div>
+
         <div class="field type-email is-required">
             <div class="field-label">
                 <label for="parent-email">Email Address</label>
@@ -301,7 +354,156 @@ function gcm_get_developmental_eval_form_template() {
                 <label for="phone-primary">Primary Phone</label>
             </div>
             <div class="field-content">
-                [tel* phone_primary id:phone-primary class:digits]
+                [tel* phone_primary id:phone-primary]
+            </div>
+        </div>
+
+        <div class="field type-tel">
+            <div class="field-label">
+                <label for="phone-secondary">Secondary Phone</label>
+            </div>
+            <div class="field-content">
+                [tel phone_secondary id:phone-secondary]
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="field-group-heading">
+    <h3 class="title">Address</h3>
+</div>
+
+<div class="field-group field-list">
+    <div class="group-fields group-columns-2">
+        <div class="field type-text is-required">
+            <div class="field-label">
+                <label for="street">Street Address</label>
+            </div>
+            <div class="field-content">
+                [text* street id:street]
+            </div>
+        </div>
+
+        <div class="field type-select">
+            <div class="field-label">
+                <label for="apartment-type">Apt/Suite Type</label>
+            </div>
+            <div class="field-content">
+                [select apartment_type id:apartment-type "None" "Apt" "Suite" "Unit" "Building"]
+            </div>
+        </div>
+
+        <div class="field type-text">
+            <div class="field-label">
+                <label for="apartment-number">Apt/Suite Number</label>
+            </div>
+            <div class="field-content">
+                [text apartment_number id:apartment-number]
+            </div>
+        </div>
+
+        <div class="field type-text is-required">
+            <div class="field-label">
+                <label for="city">City</label>
+            </div>
+            <div class="field-content">
+                [text* city id:city]
+            </div>
+        </div>
+
+        <div class="field type-text is-required">
+            <div class="field-label">
+                <label for="state">State</label>
+            </div>
+            <div class="field-content">
+                [text* state id:state placeholder "e.g., FL"]
+            </div>
+        </div>
+
+        <div class="field type-text is-required">
+            <div class="field-label">
+                <label for="zip-code">ZIP Code</label>
+            </div>
+            <div class="field-content">
+                [text* zip_code id:zip-code]
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="field-group-heading">
+    <h3 class="title">Additional Information</h3>
+</div>
+
+<div class="field-group field-list">
+    <div class="group-fields group-columns-1">
+        <div class="field type-textarea">
+            <div class="field-label">
+                <label for="previous-evaluations">Previous Evaluations (if any)</label>
+            </div>
+            <div class="field-content">
+                [textarea previous_evaluations id:previous-evaluations placeholder "Please describe any previous evaluations, when they were done, and by whom"]
+            </div>
+        </div>
+
+        <div class="field type-textarea">
+            <div class="field-label">
+                <label for="current-services">Current Services/Therapies</label>
+            </div>
+            <div class="field-content">
+                [textarea current_services id:current-services placeholder "e.g., Speech therapy, Occupational therapy, etc."]
+            </div>
+        </div>
+
+        <div class="field type-text">
+            <div class="field-label">
+                <label for="referral-source">How did you hear about us?</label>
+            </div>
+            <div class="field-content">
+                [text referral_source id:referral-source placeholder "e.g., Physician referral, Online search, Friend"]
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="field-group-heading">
+    <h3 class="title">Insurance Information</h3>
+</div>
+
+<div class="field-group field-list">
+    <div class="group-fields group-columns-2">
+        <div class="field type-text">
+            <div class="field-label">
+                <label for="insurance-name">Insurance Provider</label>
+            </div>
+            <div class="field-content">
+                [text insurance_name id:insurance-name]
+            </div>
+        </div>
+
+        <div class="field type-text">
+            <div class="field-label">
+                <label for="insurance-id">Insurance ID/Member Number</label>
+            </div>
+            <div class="field-content">
+                [text insurance_id id:insurance-id]
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="field-group-heading">
+    <h3 class="title">Scheduling Preferences</h3>
+</div>
+
+<div class="field-group field-list">
+    <div class="group-fields group-columns-1">
+        <div class="field type-select">
+            <div class="field-label">
+                <label for="preferred-time">Preferred Appointment Time</label>
+            </div>
+            <div class="field-content">
+                [select preferred_time id:preferred-time "Morning (8am-12pm)" "Afternoon (12pm-5pm)" "Evening (5pm-8pm)" "No Preference"]
             </div>
         </div>
     </div>
@@ -371,6 +573,193 @@ function gcm_get_vanderbilt_form_template() {
                 [radio q1_fails_attention use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
             </div>
         </div>
+
+        <div class="field type-radio-button-row is-required">
+            <div class="field-label">
+                <label>2. Has difficulty sustaining attention</label>
+            </div>
+            <div class="field-content">
+                [radio q2_difficulty_sustaining use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
+            </div>
+        </div>
+
+        <div class="field type-radio-button-row is-required">
+            <div class="field-label">
+                <label>3. Does not seem to listen when spoken to directly</label>
+            </div>
+            <div class="field-content">
+                [radio q3_not_listening use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
+            </div>
+        </div>
+
+        <div class="field type-radio-button-row is-required">
+            <div class="field-label">
+                <label>4. Does not follow through on instructions and fails to finish work</label>
+            </div>
+            <div class="field-content">
+                [radio q4_not_follow_through use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
+            </div>
+        </div>
+
+        <div class="field type-radio-button-row is-required">
+            <div class="field-label">
+                <label>5. Has difficulty organizing tasks and activities</label>
+            </div>
+            <div class="field-content">
+                [radio q5_difficulty_organizing use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
+            </div>
+        </div>
+
+        <div class="field type-radio-button-row is-required">
+            <div class="field-label">
+                <label>6. Avoids tasks requiring sustained mental effort</label>
+            </div>
+            <div class="field-content">
+                [radio q6_avoids_tasks use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
+            </div>
+        </div>
+
+        <div class="field type-radio-button-row is-required">
+            <div class="field-label">
+                <label>7. Loses things necessary for tasks or activities</label>
+            </div>
+            <div class="field-content">
+                [radio q7_loses_things use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
+            </div>
+        </div>
+
+        <div class="field type-radio-button-row is-required">
+            <div class="field-label">
+                <label>8. Is easily distracted by extraneous stimuli</label>
+            </div>
+            <div class="field-content">
+                [radio q8_easily_distracted use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
+            </div>
+        </div>
+
+        <div class="field type-radio-button-row is-required">
+            <div class="field-label">
+                <label>9. Is forgetful in daily activities</label>
+            </div>
+            <div class="field-content">
+                [radio q9_forgetful use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="field-group-heading">
+    <h3 class="title">Hyperactivity/Impulsivity Symptoms (Questions 10-18)</h3>
+</div>
+
+<div class="field-group field-list">
+    <div class="group-fields group-columns-1">
+        <div class="field type-radio-button-row is-required">
+            <div class="field-label">
+                <label>10. Fidgets with hands or feet or squirms in seat</label>
+            </div>
+            <div class="field-content">
+                [radio q10_fidgets use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
+            </div>
+        </div>
+
+        <div class="field type-radio-button-row is-required">
+            <div class="field-label">
+                <label>11. Leaves seat when remaining seated is expected</label>
+            </div>
+            <div class="field-content">
+                [radio q11_leaves_seat use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
+            </div>
+        </div>
+
+        <div class="field type-radio-button-row is-required">
+            <div class="field-label">
+                <label>12. Runs about or climbs excessively in inappropriate situations</label>
+            </div>
+            <div class="field-content">
+                [radio q12_runs_climbs use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
+            </div>
+        </div>
+
+        <div class="field type-radio-button-row is-required">
+            <div class="field-label">
+                <label>13. Has difficulty playing or engaging in leisure activities quietly</label>
+            </div>
+            <div class="field-content">
+                [radio q13_difficulty_quiet use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
+            </div>
+        </div>
+
+        <div class="field type-radio-button-row is-required">
+            <div class="field-label">
+                <label>14. Is "on the go" or acts as if "driven by a motor"</label>
+            </div>
+            <div class="field-content">
+                [radio q14_on_the_go use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
+            </div>
+        </div>
+
+        <div class="field type-radio-button-row is-required">
+            <div class="field-label">
+                <label>15. Talks excessively</label>
+            </div>
+            <div class="field-content">
+                [radio q15_talks_excessively use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
+            </div>
+        </div>
+
+        <div class="field type-radio-button-row is-required">
+            <div class="field-label">
+                <label>16. Blurts out answers before questions have been completed</label>
+            </div>
+            <div class="field-content">
+                [radio q16_blurts_answers use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
+            </div>
+        </div>
+
+        <div class="field type-radio-button-row is-required">
+            <div class="field-label">
+                <label>17. Has difficulty waiting their turn</label>
+            </div>
+            <div class="field-content">
+                [radio q17_difficulty_waiting use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
+            </div>
+        </div>
+
+        <div class="field type-radio-button-row is-required">
+            <div class="field-label">
+                <label>18. Interrupts or intrudes on others</label>
+            </div>
+            <div class="field-content">
+                [radio q18_interrupts use_label_element default:1 "0 - Never" "1 - Occasionally" "2 - Often" "3 - Very Often"]
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="field-group-heading">
+    <h3 class="title">Respondent Information</h3>
+</div>
+
+<div class="field-group field-list">
+    <div class="group-fields group-columns-2">
+        <div class="field type-text is-required">
+            <div class="field-label">
+                <label for="respondent-name">Your Name</label>
+            </div>
+            <div class="field-content">
+                [text* respondent_name id:respondent-name class:letters_space]
+            </div>
+        </div>
+
+        <div class="field type-text is-required">
+            <div class="field-label">
+                <label for="respondent-relationship">Relationship to Student</label>
+            </div>
+            <div class="field-content">
+                [text* respondent_relationship id:respondent-relationship]
+            </div>
+        </div>
     </div>
 </div>
 
@@ -426,7 +815,7 @@ function gcm_get_teacher_report_form_template() {
 
 <div class="field-group field-list">
     <div class="group-label">Teacher Information</div>
-    <div class="group-fields group-columns-3">
+    <div class="group-fields group-columns-2">
         <div class="field type-text is-required">
             <div class="field-label">
                 <label for="teacher-name">Your Name</label>
@@ -442,6 +831,254 @@ function gcm_get_teacher_report_form_template() {
             </div>
             <div class="field-content">
                 [email* teacher_email id:teacher-email]
+            </div>
+        </div>
+
+        <div class="field type-text is-required">
+            <div class="field-label">
+                <label for="school-name">School Name</label>
+            </div>
+            <div class="field-content">
+                [text* school_name id:school-name]
+            </div>
+        </div>
+
+        <div class="field type-text is-required">
+            <div class="field-label">
+                <label for="grade-taught">Grade</label>
+            </div>
+            <div class="field-content">
+                [text* grade_taught id:grade-taught]
+            </div>
+        </div>
+
+        <div class="field type-text">
+            <div class="field-label">
+                <label for="subject-taught">Subject(s) Taught</label>
+            </div>
+            <div class="field-content">
+                [text subject_taught id:subject-taught]
+            </div>
+        </div>
+
+        <div class="field type-text is-required">
+            <div class="field-label">
+                <label for="time-known">How long have you known this student?</label>
+            </div>
+            <div class="field-content">
+                [text* time_known_student id:time-known placeholder "e.g., 6 months, 1 year"]
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="field-group-heading">
+    <h3 class="title">Academic Performance</h3>
+</div>
+
+<div class="field-group field-list">
+    <div class="group-fields group-columns-1">
+        <div class="field type-select is-required">
+            <div class="field-label">
+                <label for="reading-level">Reading Level</label>
+            </div>
+            <div class="field-content">
+                [select* reading_level id:reading-level "Below Grade Level" "At Grade Level" "Above Grade Level"]
+            </div>
+        </div>
+
+        <div class="field type-select is-required">
+            <div class="field-label">
+                <label for="math-level">Math Level</label>
+            </div>
+            <div class="field-content">
+                [select* math_level id:math-level "Below Grade Level" "At Grade Level" "Above Grade Level"]
+            </div>
+        </div>
+
+        <div class="field type-select is-required">
+            <div class="field-label">
+                <label for="writing-level">Writing Level</label>
+            </div>
+            <div class="field-content">
+                [select* writing_level id:writing-level "Below Grade Level" "At Grade Level" "Above Grade Level"]
+            </div>
+        </div>
+
+        <div class="field type-select is-required">
+            <div class="field-label">
+                <label for="academic-performance">Overall Academic Performance</label>
+            </div>
+            <div class="field-content">
+                [select* academic_performance id:academic-performance "Excellent" "Good" "Average" "Below Average" "Poor"]
+            </div>
+        </div>
+
+        <div class="field type-textarea">
+            <div class="field-label">
+                <label for="academic-concerns">Academic Concerns (if any)</label>
+            </div>
+            <div class="field-content">
+                [textarea academic_concerns id:academic-concerns]
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="field-group-heading">
+    <h3 class="title">Behavioral Observations</h3>
+</div>
+
+<div class="field-group field-list">
+    <div class="group-fields group-columns-1">
+        <div class="field type-select is-required">
+            <div class="field-label">
+                <label for="attention-focus">Ability to Maintain Attention/Focus</label>
+            </div>
+            <div class="field-content">
+                [select* attention_focus id:attention-focus "Excellent" "Good" "Fair" "Poor" "Very Poor"]
+            </div>
+        </div>
+
+        <div class="field type-select is-required">
+            <div class="field-label">
+                <label for="follows-directions">Follows Directions</label>
+            </div>
+            <div class="field-content">
+                [select* follows_directions id:follows-directions "Always" "Usually" "Sometimes" "Rarely" "Never"]
+            </div>
+        </div>
+
+        <div class="field type-select is-required">
+            <div class="field-label">
+                <label for="completes-tasks">Completes Tasks/Assignments</label>
+            </div>
+            <div class="field-content">
+                [select* completes_tasks id:completes-tasks "Always" "Usually" "Sometimes" "Rarely" "Never"]
+            </div>
+        </div>
+
+        <div class="field type-select is-required">
+            <div class="field-label">
+                <label for="impulsivity">Impulsivity Level</label>
+            </div>
+            <div class="field-content">
+                [select* impulsivity id:impulsivity "None" "Mild" "Moderate" "Severe"]
+            </div>
+        </div>
+
+        <div class="field type-select is-required">
+            <div class="field-label">
+                <label for="hyperactivity">Hyperactivity Level</label>
+            </div>
+            <div class="field-content">
+                [select* hyperactivity id:hyperactivity "None" "Mild" "Moderate" "Severe"]
+            </div>
+        </div>
+
+        <div class="field type-textarea">
+            <div class="field-label">
+                <label for="behavioral-concerns">Behavioral Concerns (if any)</label>
+            </div>
+            <div class="field-content">
+                [textarea behavioral_concerns id:behavioral-concerns]
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="field-group-heading">
+    <h3 class="title">Social/Emotional Development</h3>
+</div>
+
+<div class="field-group field-list">
+    <div class="group-fields group-columns-1">
+        <div class="field type-select is-required">
+            <div class="field-label">
+                <label for="peer-relationships">Peer Relationships</label>
+            </div>
+            <div class="field-content">
+                [select* peer_relationships id:peer-relationships "Excellent" "Good" "Fair" "Poor" "Very Poor"]
+            </div>
+        </div>
+
+        <div class="field type-select is-required">
+            <div class="field-label">
+                <label for="adult-relationships">Relationships with Adults</label>
+            </div>
+            <div class="field-content">
+                [select* adult_relationships id:adult-relationships "Excellent" "Good" "Fair" "Poor" "Very Poor"]
+            </div>
+        </div>
+
+        <div class="field type-select is-required">
+            <div class="field-label">
+                <label for="emotional-regulation">Emotional Regulation</label>
+            </div>
+            <div class="field-content">
+                [select* emotional_regulation id:emotional-regulation "Excellent" "Good" "Fair" "Poor" "Very Poor"]
+            </div>
+        </div>
+
+        <div class="field type-textarea">
+            <div class="field-label">
+                <label for="social-concerns">Social/Emotional Concerns (if any)</label>
+            </div>
+            <div class="field-content">
+                [textarea social_concerns id:social-concerns]
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="field-group-heading">
+    <h3 class="title">Additional Information</h3>
+</div>
+
+<div class="field-group field-list">
+    <div class="group-fields group-columns-1">
+        <div class="field type-textarea">
+            <div class="field-label">
+                <label for="accommodations">Current Accommodations/Modifications</label>
+            </div>
+            <div class="field-content">
+                [textarea accommodations id:accommodations]
+            </div>
+        </div>
+
+        <div class="field type-select is-required">
+            <div class="field-label">
+                <label for="iep-status">IEP or 504 Plan Status</label>
+            </div>
+            <div class="field-content">
+                [select* iep_status id:iep-status "Has IEP" "Has 504 Plan" "Neither" "Don\'t Know"]
+            </div>
+        </div>
+
+        <div class="field type-textarea">
+            <div class="field-label">
+                <label for="student-strengths">Student Strengths</label>
+            </div>
+            <div class="field-content">
+                [textarea student_strengths id:student-strengths]
+            </div>
+        </div>
+
+        <div class="field type-textarea">
+            <div class="field-label">
+                <label for="recommendations">Recommendations</label>
+            </div>
+            <div class="field-content">
+                [textarea recommendations id:recommendations]
+            </div>
+        </div>
+
+        <div class="field type-textarea">
+            <div class="field-label">
+                <label for="additional-comments">Additional Comments</label>
+            </div>
+            <div class="field-content">
+                [textarea additional_comments id:additional-comments]
             </div>
         </div>
     </div>
@@ -498,32 +1135,156 @@ function gcm_get_pcp_referral_form_template() {
 </div>
 
 <div class="field-group field-list">
-    <div class="group-label">Referring Physician</div>
-    <div class="group-fields group-columns-3">
+    <div class="group-label">Referring Physician Information</div>
+    <div class="group-fields group-columns-2">
         <div class="field type-text is-required">
             <div class="field-label">
-                <label for="physician-name">Your Name</label>
+                <label for="physician-name">Physician Name</label>
             </div>
             <div class="field-content">
                 [text* physician_name id:physician-name class:letters_space]
             </div>
         </div>
 
+        <div class="field type-text is-required">
+            <div class="field-label">
+                <label for="practice-name">Practice Name</label>
+            </div>
+            <div class="field-content">
+                [text* practice_name id:practice-name]
+            </div>
+        </div>
+
+        <div class="field type-tel is-required">
+            <div class="field-label">
+                <label for="physician-phone">Phone</label>
+            </div>
+            <div class="field-content">
+                [tel* physician_phone id:physician-phone]
+            </div>
+        </div>
+
+        <div class="field type-tel is-required">
+            <div class="field-label">
+                <label for="physician-fax">Fax</label>
+            </div>
+            <div class="field-content">
+                [tel* physician_fax id:physician-fax]
+            </div>
+        </div>
+
         <div class="field type-email is-required">
             <div class="field-label">
-                <label for="physician-email">Your Email</label>
+                <label for="physician-email">Email</label>
             </div>
             <div class="field-content">
                 [email* physician_email id:physician-email]
             </div>
         </div>
 
-        <div class="field type-dropdown is-required">
+        <div class="field type-textarea">
+            <div class="field-label">
+                <label for="practice-address">Practice Address</label>
+            </div>
+            <div class="field-content">
+                [textarea practice_address id:practice-address]
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="field-group-heading">
+    <h3 class="title">Referral Information</h3>
+</div>
+
+<div class="field-group field-list">
+    <div class="group-fields group-columns-1">
+        <div class="field type-select is-required">
             <div class="field-label">
                 <label for="referral-reason">Reason for Referral</label>
             </div>
             <div class="field-content">
-                [select* referral_reason id:referral-reason "ADHD Evaluation" "Autism Spectrum Evaluation" "Learning Disability Assessment" "Developmental Delay Evaluation" "Other"]
+                [select* referral_reason id:referral-reason "ADHD Evaluation" "Autism Spectrum Evaluation" "Learning Disability Assessment" "Developmental Delay Evaluation" "Behavioral Assessment" "Speech/Language Concerns" "Other"]
+            </div>
+        </div>
+
+        <div class="field type-textarea is-required">
+            <div class="field-label">
+                <label for="chief-complaint">Chief Complaint / Reason for Referral</label>
+            </div>
+            <div class="field-content">
+                [textarea* chief_complaint id:chief-complaint]
+            </div>
+        </div>
+
+        <div class="field type-select is-required">
+            <div class="field-label">
+                <label for="urgency-level">Urgency Level</label>
+            </div>
+            <div class="field-content">
+                [select* urgency_level id:urgency-level "Routine" "Urgent" "Emergent"]
+            </div>
+        </div>
+
+        <div class="field type-select is-required">
+            <div class="field-label">
+                <label for="preferred-timeframe">Preferred Appointment Timeframe</label>
+            </div>
+            <div class="field-content">
+                [select* preferred_timeframe id:preferred-timeframe "Within 1 week" "Within 2 weeks" "Within 1 month" "Within 3 months" "No preference"]
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="field-group-heading">
+    <h3 class="title">Parent/Guardian Contact Information</h3>
+    <p>For scheduling purposes</p>
+</div>
+
+<div class="field-group field-list">
+    <div class="group-fields group-columns-2">
+        <div class="field type-text is-required">
+            <div class="field-label">
+                <label for="parent-name">Parent/Guardian Name</label>
+            </div>
+            <div class="field-content">
+                [text* parent_name id:parent-name class:letters_space]
+            </div>
+        </div>
+
+        <div class="field type-tel is-required">
+            <div class="field-label">
+                <label for="parent-phone">Parent/Guardian Phone</label>
+            </div>
+            <div class="field-content">
+                [tel* parent_phone id:parent-phone]
+            </div>
+        </div>
+
+        <div class="field type-email">
+            <div class="field-label">
+                <label for="parent-email">Parent/Guardian Email</label>
+            </div>
+            <div class="field-content">
+                [email parent_email id:parent-email]
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="field-group-heading">
+    <h3 class="title">Insurance Information</h3>
+</div>
+
+<div class="field-group field-list">
+    <div class="group-fields group-columns-1">
+        <div class="field type-text">
+            <div class="field-label">
+                <label for="insurance-name">Insurance Provider Name</label>
+            </div>
+            <div class="field-content">
+                [text insurance_name id:insurance-name placeholder "e.g., Blue Cross, Aetna, UnitedHealthcare"]
             </div>
         </div>
     </div>
