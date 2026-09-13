@@ -71,6 +71,43 @@ run on the guarded synthetic fixture. Real delivery/SMTP privacy controls,
 website spam/rate controls and EHR matching require additional acceptance. This
 is not a HIPAA-compliance assertion or complete clinical validation.
 
+## Managed mail and spam protection
+
+Practice Stack enables `GCM_SMTP_MANAGED=1` and `GCM_TURNSTILE_MANAGED=1`.
+Missing/invalid managed configuration blocks mail/submission instead of falling
+back to PHP mail or inactive bot protection. Administrator notices and the native
+deployment `site_services` report expose readiness without exposing credentials.
+Outside managed deployment, native administrator integrations remain unchanged.
+
+SMTP uses WordPress's PHPMailer hook, authenticated `starttls` or `smtps`, required
+TLS 1.2/1.3 and OS-trusted peer/hostname verification. No plaintext fallback,
+self-signed bypass, SMTP wire debugging or persistent SMTP connection. Configure
+`GCM_SMTP_HOST`, `PORT`, `SECURITY`, `USERNAME`, `PASSWORD`, `FROM_EMAIL` (each with
+the `GCM_SMTP_` prefix). The authorized relay sender replaces the From/envelope;
+native CF7 clinical destinations and Reply-To are not redirected.
+
+CF7's built-in Turnstile integration owns widget rendering, token verification
+and spam result handling. Deployment supplies `GCM_TURNSTILE_SITE_KEY` and
+`GCM_TURNSTILE_SECRET_KEY` through vendor filters; neither is persisted to CF7's
+database settings. Configure a Managed widget restricted to the actual website
+hostnames. Missing/failed/expired tokens cannot reach mail. Keep `WP_DEBUG=false`:
+CF7's own failed-request debug logger can include the verification secret.
+Public Cloudflare dummy keys are accepted only with `WP_ENVIRONMENT_TYPE=local`
+and a `.localhost` site. They provide no production protection.
+
+Use 1Password `WP_SMTP_PASSWORD` (or explicitly select the existing
+`MAIL_SMTP_PASSWORD`) and `WP_TURNSTILE_SECRET_KEY` through Practice Stack's
+protected secret bank. Non-secret host/username/sender/site key live in deployment
+configuration, not this source. `tests/native-site-services.php` exercises native
+CF7 decisions with intercepted verification/mail. `tests/native-smtp-transport.py`
+tests real TLS/AUTH/native mail results using only an internal disposable receiver
+and process-local trust. No real inbox or global trust-store change.
+
+Configured is not delivery-verified. Before clinical use, approve the actual
+relay/recipient handling and verify delivery, public challenge/browser behavior,
+and operational rate limits. SMTP TLS covers the relay hop, not end-to-end inbox
+encryption or retention. These tests are not a compliance certification.
+
 ## Optional i693 intake export
 
 In the intended native CF7 form's **Additional Settings** tab, add:

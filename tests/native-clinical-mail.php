@@ -4,6 +4,15 @@ declare(strict_types=1);
 if (PHP_SAPI !== 'cli' || getenv('PRACTICE_FRESH_INSTALL_TEST') !== 'true') {
     throw new RuntimeException('Disposable CLI fixture required');
 }
+// Exercise the managed services too; no real account or network transport.
+foreach (array('SMTP_MANAGED'=>'1', 'SMTP_HOST'=>'smtp.example.invalid', 'SMTP_PORT'=>'587',
+    'SMTP_SECURITY'=>'starttls', 'SMTP_USERNAME'=>'fixture', 'SMTP_PASSWORD'=>'synthetic-password',
+    'SMTP_FROM_EMAIL'=>'website@example.invalid', 'TURNSTILE_MANAGED'=>'1',
+    'TURNSTILE_SITE_KEY'=>'1x00000000000000000000AA',
+    'TURNSTILE_SECRET_KEY'=>'1x0000000000000000000000000000000AA') as $key => $value) {
+    putenv('GCM_' . $key . '=' . $value);
+}
+putenv('WP_ENVIRONMENT_TYPE=local');
 require '/var/www/html/wp-load.php';
 if (!preg_match('~^https://www\.practice-fresh-check-[a-f0-9]{12}\.localhost$~D', get_option('home'))) {
     throw new RuntimeException('Expected retained isolated website');
@@ -11,6 +20,13 @@ if (!preg_match('~^https://www\.practice-fresh-check-[a-f0-9]{12}\.localhost$~D'
 function check(bool $ok, string $message): void {
     if (!$ok) { throw new RuntimeException($message); }
 }
+add_filter('pre_http_request', static function ($pre, $args, $url) {
+    if ($url !== 'https://challenges.cloudflare.com/turnstile/v0/siteverify') {
+        return new WP_Error('fixture_network_blocked');
+    }
+    check(array_keys($args['body']) === array('secret', 'response'), 'Clinical data sent to spam provider');
+    return array('headers'=>array(), 'body'=>'{"success":true}', 'response'=>array('code'=>200, 'message'=>'OK'), 'cookies'=>array());
+}, 10, 3);
 require_once ABSPATH . WPINC . '/PHPMailer/PHPMailer.php';
 require_once ABSPATH . WPINC . '/PHPMailer/Exception.php';
 require_once ABSPATH . WPINC . '/PHPMailer/SMTP.php';
@@ -59,6 +75,7 @@ $mail['sender'] = 'Website <website@example.invalid>';
 $mail['additional_headers'] = '';
 $form->set_properties(array('mail' => $mail));
 $_POST = array('_wpcf7' => (string) $form->id(), '_wpcf7_locale' => 'en_US',
+    '_wpcf7_turnstile_response' => 'XXXX.DUMMY.TOKEN.XXXX',
     '_wpcf7_unit_tag' => 'wpcf7-f' . $form->id() . '-o1');
 foreach ($form->scan_form_tags() as $tag) {
     if (!$tag->name) { continue; }

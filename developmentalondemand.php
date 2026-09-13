@@ -20,6 +20,7 @@ include( __DIR__ . '/includes/dashboard.php' );
 include( __DIR__ . '/includes/i693_form.php' );
 include( __DIR__ . '/includes/form-installer.php' );
 include( __DIR__ . '/includes/clinical-form-mail.php' );
+include( __DIR__ . '/includes/site-services.php' );
 include( __DIR__ . '/includes/developmental-eval-form.php' );
 include( __DIR__ . '/includes/vanderbilt-scoring.php' );
 include( __DIR__ . '/includes/teacher-report-form.php' );
