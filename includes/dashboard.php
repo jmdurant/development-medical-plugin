@@ -103,6 +103,9 @@ function gcm_display_general_settings_page() {
  * @return void
  */
 function gcm_display_provider_sync_page() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
 	// Handle manual sync request
 	$sync_result = null;
 	if ( isset( $_POST['gcm_trigger_sync'] ) && check_admin_referer( 'gcm_provider_sync', 'gcm_sync_nonce' ) ) {
@@ -117,10 +120,11 @@ function gcm_display_provider_sync_page() {
 	}
 
 	// Get current configuration
-	$sync_enabled = function_exists( 'get_field' ) ? get_field( 'google_sheets_enabled', 'option' ) : false;
-	$last_sync = function_exists( 'get_field' ) ? get_field( 'google_sheets_last_sync', 'option' ) : null;
-	$spreadsheet_id = function_exists( 'get_field' ) ? get_field( 'google_spreadsheet_id', 'option' ) : null;
-	$staff_count = function_exists( 'get_field' ) ? count( get_field( 'staff_list', 'option' ) ?: array() ) : 0;
+	$sync_enabled = function_exists( 'get_field' ) ? get_field( 'google_sheets_enabled', 'gcm_settings' ) : false;
+	$last_sync = function_exists( 'get_field' ) ? get_field( 'google_sheets_last_sync', 'gcm_settings' ) : null;
+	$spreadsheet_id = function_exists( 'get_field' ) ? get_field( 'google_spreadsheet_id', 'gcm_settings' ) : null;
+	$staff = function_exists( 'get_field' ) ? get_field( 'staff_list', 'gcm_settings' ) : array();
+	$staff_count = is_array($staff) ? count($staff) : 0;
 
 	?>
 	<div class="wrap">
@@ -240,7 +244,7 @@ function gcm_display_provider_sync_page() {
 				<li>Go to <a href="<?php echo admin_url( 'admin.php?page=acf-options-website-settings' ); ?>">Website Settings</a></li>
 				<li>Scroll to "Google Sheets Provider Sync" section</li>
 				<li>Check "Enable Google Sheets Sync"</li>
-				<li>Enter your service account JSON path and spreadsheet ID</li>
+				<li>Supply <code>WP_SHEETS_SERVICE_ACCOUNT_B64</code> through the deployment secret store; enter only the spreadsheet ID and tab in settings</li>
 				<li>Click "Update"</li>
 			</ol>
 			<p>
@@ -256,7 +260,7 @@ function gcm_display_provider_sync_page() {
 			<ul>
 				<li><strong>Theme Documentation:</strong> <code>GOOGLE_SHEETS_SYNC.md</code></li>
 				<li><strong>WP-CLI Command:</strong> <code>wp dod sync-providers</code></li>
-				<li><strong>Sheet Format:</strong> Email, Full Name, NPI, CAQH ID, DEA, DEA Expiry, License1_State, License1_Number, License1_Expiration, etc.</li>
+				<li><strong>Required headers:</strong> Email, First Name, Last Name, Status. Credential columns include NPI, CAQH ID, DEA Number, DEA Expiration, License State 1, License Number 1, License Expiration 1, etc.</li>
 			</ul>
 		</div>
 	</div>
