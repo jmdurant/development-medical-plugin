@@ -2,23 +2,26 @@
 /**
  * NICHQ Vanderbilt Assessment Scale Scoring
  *
- * Public domain ADHD screening tool scoring and interpretation.
+ * Numeric summaries for the installed 18-item Vanderbilt symptom subset.
  *
- * Clinical Criteria:
+ * Symptom-count thresholds:
  * - Inattention: 6 or more items rated 2 or 3 (out of 9 questions)
  * - Hyperactivity/Impulsivity: 6 or more items rated 2 or 3 (out of 9 questions)
  *
- * Interpretations:
- * - Inattention only: ADHD, Predominantly Inattentive Type
- * - Hyperactivity/Impulsivity only: ADHD, Predominantly Hyperactive-Impulsive Type
- * - Both: ADHD, Combined Type
- * - Neither: Does not meet ADHD criteria
+ * These counts do not include performance impairment or establish/exclude a diagnosis.
+ * The complete instrument and clinical evaluation remain distinct from this subset.
  */
 
 // Submission transport is shared in clinical-form-mail.php.
 
+function gcm_vanderbilt_subset_notice($html) {
+    if (GCM_Clinical_Form_Mail::kind(wpcf7_get_current_contact_form()) !== 'vanderbilt') { return $html; }
+    return '<p class="gcm-assessment-notice">This form contains 18 symptom items only. It is not a complete Vanderbilt assessment and cannot establish or exclude a diagnosis. A clinician must review the results.</p>' . $html;
+}
+add_filter('wpcf7_form_elements', 'gcm_vanderbilt_subset_notice', 20);
+
 /**
- * Calculate Vanderbilt scores and determine clinical significance
+ * Calculate symptom counts without making a diagnosis
  *
  * @param array $data Form submission data
  * @return array Scoring results
@@ -84,16 +87,16 @@ function calculate_vanderbilt_scores( $data ) {
 	$inattention_positive = ( $inattention_count >= 6 );
 	$hyperactivity_positive = ( $hyperactivity_count >= 6 );
 
-	// Clinical interpretation
+	// Symptom counts only: this partial form does not assess impairment or diagnose.
 	$interpretation = '';
 	if ( $inattention_positive && $hyperactivity_positive ) {
-		$interpretation = 'Indicative of ADHD, Combined Type';
+		$interpretation = 'Both symptom-count thresholds reached; clinician review required.';
 	} elseif ( $inattention_positive ) {
-		$interpretation = 'Indicative of ADHD, Predominantly Inattentive Type';
+		$interpretation = 'Inattention symptom-count threshold reached; clinician review required.';
 	} elseif ( $hyperactivity_positive ) {
-		$interpretation = 'Indicative of ADHD, Predominantly Hyperactive-Impulsive Type';
+		$interpretation = 'Hyperactivity/impulsivity symptom-count threshold reached; clinician review required.';
 	} else {
-		$interpretation = 'Does not meet ADHD criteria';
+		$interpretation = 'Neither symptom-count threshold reached. This partial form does not exclude a diagnosis.';
 	}
 
 	// Calculate raw scores (sum of all ratings)
@@ -108,6 +111,9 @@ function calculate_vanderbilt_scores( $data ) {
 	}
 
 	return array(
+		'assessment_complete' => false,
+		'diagnosis_determined' => false,
+		'clinical_review_required' => true,
 		'inattention_count' => $inattention_count,
 		'inattention_positive' => $inattention_positive,
 		'inattention_raw_score' => $inattention_raw,
@@ -149,18 +155,21 @@ function generate_vanderbilt_xml( $data, $scores, $formatted_dob, $today ) {
 	$xml .= '  </respondent>' . "\n\n";
 
 	// Scores and interpretation
-	$xml .= '  <scoring_results>' . "\n";
+	$xml .= '  <scoring_results export_version="2">' . "\n";
+	$xml .= '    <assessment_complete>false</assessment_complete>' . "\n";
+	$xml .= '    <diagnosis_determined>false</diagnosis_determined>' . "\n";
+	$xml .= '    <clinical_review_required>true</clinical_review_required>' . "\n";
 	$xml .= '    <inattention>' . "\n";
 	$xml .= '      <items_rated_2_or_3>' . $scores['inattention_count'] . '</items_rated_2_or_3>' . "\n";
 	$xml .= '      <raw_score>' . $scores['inattention_raw_score'] . '</raw_score>' . "\n";
-	$xml .= '      <clinically_significant>' . ( $scores['inattention_positive'] ? 'Yes' : 'No' ) . '</clinically_significant>' . "\n";
+	$xml .= '      <symptom_count_threshold_met>' . ( $scores['inattention_positive'] ? 'Yes' : 'No' ) . '</symptom_count_threshold_met>' . "\n";
 	$xml .= '    </inattention>' . "\n";
 	$xml .= '    <hyperactivity_impulsivity>' . "\n";
 	$xml .= '      <items_rated_2_or_3>' . $scores['hyperactivity_count'] . '</items_rated_2_or_3>' . "\n";
 	$xml .= '      <raw_score>' . $scores['hyperactivity_raw_score'] . '</raw_score>' . "\n";
-	$xml .= '      <clinically_significant>' . ( $scores['hyperactivity_positive'] ? 'Yes' : 'No' ) . '</clinically_significant>' . "\n";
+	$xml .= '      <symptom_count_threshold_met>' . ( $scores['hyperactivity_positive'] ? 'Yes' : 'No' ) . '</symptom_count_threshold_met>' . "\n";
 	$xml .= '    </hyperactivity_impulsivity>' . "\n";
-	$xml .= '    <clinical_interpretation>' . esc_xml( $scores['interpretation'] ) . '</clinical_interpretation>' . "\n";
+	$xml .= '    <symptom_summary>' . esc_xml( $scores['interpretation'] ) . '</symptom_summary>' . "\n";
 	$xml .= '  </scoring_results>' . "\n\n";
 
 	// Individual responses (all 18 symptom items)
@@ -236,21 +245,21 @@ function generate_vanderbilt_summary( $data, $scores, $today ) {
 	$summary .= "INATTENTION DOMAIN (Questions 1-9):\n";
 	$summary .= "  Items rated 2 or 3: {$scores['inattention_count']} out of 9\n";
 	$summary .= "  Raw score: {$scores['inattention_raw_score']}\n";
-	$summary .= "  Clinically Significant: " . ( $scores['inattention_positive'] ? "YES (≥6 items)" : "No (<6 items)" ) . "\n\n";
+	$summary .= "  Symptom-count threshold reached: " . ( $scores['inattention_positive'] ? "YES (≥6 items)" : "No (<6 items)" ) . "\n\n";
 
 	$summary .= "HYPERACTIVITY/IMPULSIVITY DOMAIN (Questions 10-18):\n";
 	$summary .= "  Items rated 2 or 3: {$scores['hyperactivity_count']} out of 9\n";
 	$summary .= "  Raw score: {$scores['hyperactivity_raw_score']}\n";
-	$summary .= "  Clinically Significant: " . ( $scores['hyperactivity_positive'] ? "YES (≥6 items)" : "No (<6 items)" ) . "\n\n";
+	$summary .= "  Symptom-count threshold reached: " . ( $scores['hyperactivity_positive'] ? "YES (≥6 items)" : "No (<6 items)" ) . "\n\n";
 
-	$summary .= "CLINICAL INTERPRETATION:\n";
+	$summary .= "SYMPTOM-COUNT SUMMARY:\n";
 	$summary .= "------------------------\n";
 	$summary .= $scores['interpretation'] . "\n\n";
 
 	$summary .= "IMPORTANT NOTE:\n";
 	$summary .= "--------------\n";
-	$summary .= "This is a screening tool, not a diagnostic instrument.\n";
-	$summary .= "Positive results indicate need for comprehensive evaluation.\n";
+	$summary .= "This is an 18-item symptom subset, not a complete Vanderbilt assessment.\n";
+	$summary .= "These counts alone cannot establish or exclude a diagnosis.\n";
 	$summary .= "Diagnosis requires clinical interview, multiple informants, and\n";
 	$summary .= "assessment of functional impairment across multiple settings.\n";
 

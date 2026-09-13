@@ -1,45 +1,26 @@
-# NICHQ Vanderbilt Assessment Scale - Contact Form 7 Template
+# Vanderbilt Symptom Subset — Contact Form 7
 
-Public domain ADHD screening tool with automatic scoring and clinical interpretation.
+This WordPress form contains 18 symptom items only. It is not a complete
+Vanderbilt assessment and does not establish or exclude a diagnosis.
 
-## Scoring Criteria
+## Setup and runtime contract
 
-**Rating Scale:**
-- 0 = Never
-- 1 = Occasionally
-- 2 = Often
-- 3 = Very Often
+Use the native form created by `gcm_install_evaluation_forms()` and its current
+`includes/form-installer.php` template. Identity and respondent fields are required;
+the symptom-section example below is not a complete standalone form. Do not edit
+PHP to insert a form ID. The installer saves the native ID in WordPress options.
 
-**Clinical Significance:**
-- **Inattention**: 6 or more items (out of 9) rated 2 or 3
-- **Hyperactivity/Impulsivity**: 6 or more items (out of 9) rated 2 or 3
+Configure primary clinical recipients/sender in the native Mail tab. The shared
+transport sends one generic-subject email with in-memory XML and TXT attachments.
+No patient data appears in the subject, and primary failure reports failure.
+There is no separate diagnostic email or respondent acknowledgement for this form.
 
-**Interpretations:**
-- Inattention ONLY positive → **ADHD, Predominantly Inattentive Type**
-- Hyperactivity/Impulsivity ONLY positive → **ADHD, Predominantly Hyperactive-Impulsive Type**
-- BOTH positive → **ADHD, Combined Type**
-- Neither positive → Does not meet ADHD criteria
+Ratings 0–3 retain their numerical meaning. Counts of items rated 2 or 3 and
+thresholds of six items per nine-item domain are symptom summaries only. Missing
+or malformed ratings fail instead of becoming zero. See the plugin readme for
+field bounds, native transport tests and complete-versus-partial instrument limits.
 
-## Setup Instructions
-
-1. Create new Contact Form 7 form
-2. Copy HTML template below
-3. Note Form ID
-4. Edit `vanderbilt-scoring.php` line 22, replace `XXXX` with form ID
-5. Add to `developmentalondemand.php`:
-   ```php
-   include( __DIR__ . '/includes/vanderbilt-scoring.php' );
-   ```
-
-## Features
-
-- **Automatic Scoring** - Calculates domain scores instantly
-- **Clinical Interpretation** - Provides ADHD type indication
-- **Detailed Email** - Results in subject line for quick triage
-- **XML Export** - Structured data with scores and interpretation
-- **Summary Report** - Human-readable TXT file
-
-## Contact Form 7 HTML Template
+## Symptom Section Example
 
 ```html
 <div class="field-group-heading">
@@ -287,75 +268,18 @@ Public domain ADHD screening tool with automatic scoring and clinical interpreta
 </div>
 ```
 
-## What Happens After Submission
+## Export version 2
 
-1. **Automatic Scoring**:
-   - Counts items rated 2-3 in each domain
-   - Determines if ≥6 items in each domain
-   - Calculates raw scores
+XML reports `assessment_complete=false`, `diagnosis_determined=false` and
+`clinical_review_required=true`. Domain counts use `symptom_count_threshold_met`,
+not `clinically_significant`; `symptom_summary` replaces `clinical_interpretation`.
+No output assigns an ADHD subtype or says that a low count excludes a diagnosis.
 
-2. **Email Sent with Results**:
-   - Subject: "Vanderbilt Assessment - [Name] - [Interpretation]"
-   - Body includes domain results and interpretation
-   - XML attachment with full data
-   - TXT summary report
+A native rendering filter adds the subset notice to previously installed forms
+without overwriting operator-edited content. Numeric calculations are unchanged.
 
-3. **Clinical Interpretation Provided**:
-   - ADHD, Combined Type (both positive)
-   - ADHD, Predominantly Inattentive Type (inattention only)
-   - ADHD, Predominantly Hyperactive-Impulsive Type (hyperactivity only)
-   - Does not meet ADHD criteria (neither positive)
-
-## Example Email Output
-
-```
-Subject: Vanderbilt Assessment - John Doe - Indicative of ADHD, Combined Type
-
-Vanderbilt Assessment Results
-
-Student: John Doe
-DOB: 05/15/2015
-Completed by: Mrs. Smith (Teacher)
-Date: 10/03/2025
-
-RESULTS:
---------
-Inattention: 7/9 items rated 2-3 (POSITIVE)
-Hyperactivity/Impulsivity: 8/9 items rated 2-3 (POSITIVE)
-
-Clinical Interpretation: Indicative of ADHD, Combined Type
-
-See attached files for complete results.
-```
-
-## Important Clinical Notes
-
-- This is a **screening tool**, not a diagnostic instrument
-- Positive results indicate need for comprehensive evaluation
-- Diagnosis requires:
-  - Clinical interview
-  - Multiple informants (parent + teacher reports)
-  - Assessment of functional impairment
-  - Rule out other conditions
-
-## Adding Performance & Behavior Sections
-
-The full Vanderbilt also includes:
-- Academic performance ratings
-- Classroom behavioral performance
-- Additional questions about comorbid conditions
-
-These can be added as optional fields without affecting the core ADHD scoring.
-
-## Customization
-
-To add parent version:
-1. Copy this template
-2. Change wording ("your child" instead of "the student")
-3. Use different form ID
-4. Adapt for home settings vs. classroom
-
-To add follow-up versions:
-- Track scores over time
-- Compare pre/post intervention
-- Monitor medication effects
+The [publisher scoring instructions](https://nichq.org/wp-content/uploads/2024/09/07Scoring-Instructions.pdf)
+include performance impairment and warn against using these scales alone for
+diagnosis. Adding arbitrary fields is not complete instrument validation; use a
+reviewed full-instrument workflow for that purpose. The EHR questionnaire system
+is separate from this WordPress intake/export.

@@ -1,232 +1,79 @@
 <?php
-
-add_action( 'wpcf7_before_send_mail', 'gcm_pre_send_cf7_email_insert_attachments' );
-
-
 /**
- * This function is from the old theme and is responsible for adding the
- * XML, XDP, and TXT attachments to Contact Form 7 emails for the i693 form.
- *
- * @param WPCF7_ContactForm $cf7
- *
- * @return void
+ * Optional i693 demographic exports. Select the real native CF7 form using
+ * Additional Settings: gcm_export: i693. There is no installation-specific ID.
+ * These files contain applicant-supplied intake, not certified medical findings.
  */
-function gcm_pre_send_cf7_email_insert_attachments( $cf7 ) {
-	// get info about the form and current submission instance
-	
-	// $wpcf7 = WPCF7_ContactForm::get_current();
-	// $form_id = $wpcf7->id;
-	
-	$form_id = $cf7->id;
-	
-	if ($form_id === 3170) {
-		
-		$to = $cf7->mail['recipient']; // same recipient as mail(1)
-		// $to = "durant@developmentalondemand.com,i693@developmentalondemand.com";
-		// $to = "malikkamranrashid@gmail.com";
-		
-		$headers = array( "From: " . $cf7->mail['sender'] );
-		// $headers = "From: Developmental On Demand <noreply@developmentalondemand.com>" . "\r\n";
-		
-		$originalDate = $_POST['dob'];
-		$newDate = date("m/d/Y", strtotime($originalDate));
-		$FilenameDate = date("mdY", strtotime($originalDate));
-		
-		$today = date("m/d/Y");
-		
-		$output = "";
-		$output .= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<form1>
-<!--User generated-->
-<Pt1Line1b_GivenName>" . $_POST['FirstName'] . "</Pt1Line1b_GivenName>
-<!--Last name of patient-->
-<Pt1Line1a_FamilyName>" . $_POST['LastName'] . "</Pt1Line1a_FamilyName>
-<!--First name of patient-->
-<Pt1Line1c_MiddleName>" . $_POST['MiddleName'] . "</Pt1Line1c_MiddleName>
-<!--Middle name of patient-->
-<Pt1Line2_StreetNumberName>" . $_POST['Street'] . "</Pt1Line2_StreetNumberName>
-<!--Patients address-->
-<Pt1Line2_Unit> " . $_POST['AppartmentType'] . " </Pt1Line2_Unit>
-<!--Appartment type-->
-<Pt1Line2_AptSteFlrNumber>" . $_POST['Appartment'] . "</Pt1Line2_AptSteFlrNumber>
-<!--Appartment unit-->
-<P1Line2_CityOrTown>" . $_POST['CityTown'] . "</P1Line2_CityOrTown>
-<!--Patient's city-->
-<P1Line2_State>" . $_POST['State'] . "</P1Line2_State>
-<!--Patient's State-->
-<P1Line2_ZipCode>" . $_POST['ZipCode'] . "</P1Line2_ZipCode>
-<!--Patient's zip-->
-<Pt1Line3_Gender>" . $_POST['Gender'] . "</Pt1Line3_Gender>
-<!--Gender of patient-->
-<Pt1Line3_DateOfBirth>" . $newDate . "</Pt1Line3_DateOfBirth>
-<!--DOB of patient-->
-<Pt1Line3_CityTownVillageofBirth>" . $_POST['CityBirth'] . "</Pt1Line3_CityTownVillageofBirth>
-<!--City of birth-->
-<Pt1Line3_CountryofBirth>" . $_POST['CountryBirth'] . "</Pt1Line3_CountryofBirth>
-<!--Country of birth-->
-<Pt1Line3e_AlienNumber>" . $_POST['ANumber'] . "</Pt1Line3e_AlienNumber>
-<!--A#-->
-<Pt1Line3f_USCISOnlineAcctNumber>" . $_POST['USCIS'] . "</Pt1Line3f_USCISOnlineAcctNumber>
-<Pt2Line3_DaytimePhone>" . $_POST['DaytimeTelephone'] . "</Pt2Line3_DaytimePhone>
-<!--Patient's day time phone number-->
-<Pt2Line4_Mobilephone>" . $_POST['MobileTelephone'] . "</Pt2Line4_Mobilephone>
-<!--Patient's cell-->
-<Pt2Line5_EmailAddress>" . $_POST['Emailaddres'] . "</Pt2Line5_EmailAddress>
-<!--Patient's email -->";
-		$output .= "</form1>";
-		
-		
-		
-		$output2 = "";
-		$output2 .= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-		<?xfa generator=\"XFA2_4\" APIVersion=\"3.6.14289.0\"?>
-<xdp:xdp xmlns:xdp=\"http://ns.adobe.com/xdp/\" timeStamp=\"2020-12-20T15:19:40Z\" uuid=\"6de0130a-2e5c-4c62-b10d-1ac75a98779a\">
-<xfa:datasets xmlns:xfa=\"http://www.xfa.org/schema/xfa-data/1.0/\">
-<xfa:data>
-<form1>
-<!--User generated-->
-<Pt1Line1b_GivenName>" . $_POST['FirstName'] . "</Pt1Line1b_GivenName>
-<!--Last name of patient-->
-<Pt1Line1a_FamilyName>" . $_POST['LastName'] . "</Pt1Line1a_FamilyName>
-<!--First name of patient-->
-<Pt1Line1c_MiddleName>" . $_POST['MiddleName'] . "</Pt1Line1c_MiddleName>
-<!--Middle name of patient-->
-<Pt1Line2_StreetNumberName>" . $_POST['Street'] . "</Pt1Line2_StreetNumberName>
-<!--Patients address-->
-<Pt1Line2_Unit> " . $_POST['AppartmentType'] . " </Pt1Line2_Unit>
-<!--Appartment type-->
-<Pt1Line2_AptSteFlrNumber>" . $_POST['Appartment'] . "</Pt1Line2_AptSteFlrNumber>
-<!--Appartment unit-->
-<P1Line2_CityOrTown>" . $_POST['CityTown'] . "</P1Line2_CityOrTown>
-<!--Patient's city-->
-<P1Line2_State>" . $_POST['State'] . "</P1Line2_State>
-<!--Patient's State-->
-<P1Line2_ZipCode>" . $_POST['ZipCode'] . "</P1Line2_ZipCode>
-<!--Patient's zip-->
-<Pt1Line3_Gender>" . $_POST['Gender'] . "</Pt1Line3_Gender>
-<!--Gender of patient-->
-<Pt1Line3_DateOfBirth>" . $newDate . "</Pt1Line3_DateOfBirth>
-<!--DOB of patient-->
-<Pt1Line3_CityTownVillageofBirth>" . $_POST['CityBirth'] . "</Pt1Line3_CityTownVillageofBirth>
-<!--City of birth-->
-<Pt1Line3_CountryofBirth>" . $_POST['CountryBirth'] . "</Pt1Line3_CountryofBirth>
-<!--Country of birth-->
-<Pt1Line3e_AlienNumber>" . $_POST['ANumber'] . "</Pt1Line3e_AlienNumber>
-<!--A#-->
-<Pt1Line3f_USCISOnlineAcctNumber>" . $_POST['USCIS'] . "</Pt1Line3f_USCISOnlineAcctNumber>
-<Pt2Line3_DaytimePhone>" . $_POST['DaytimeTelephone'] . "</Pt2Line3_DaytimePhone>
-<!--Patient's day time phone number-->
-<Pt2Line4_Mobilephone>" . $_POST['MobileTelephone'] . "</Pt2Line4_Mobilephone>
-<!--Patient's cell-->
-<Pt2Line5_EmailAddress>" . $_POST['Emailaddres'] . "</Pt2Line5_EmailAddress>
-<!--Patient's email -->";
-		$output2 .= "<!--The text below is for Form prefill -->
-<Pt7Line2_MedPracticeName>Developmental On Demand</Pt7Line2_MedPracticeName>
-<Pt7Line3_StreetNumberName>51 Saint Nicholas Ave</Pt7Line3_StreetNumberName>
-<Pt7Line3_AptSteFlrNumber></Pt7Line3_AptSteFlrNumber>
-<Pt7Line3_CityOrTown>New York</Pt7Line3_CityOrTown>
-<Pt7Line3_State>NY</Pt7Line3_State>
-<Pt7Line3_ZipCode>10026</Pt7Line3_ZipCode>
-<Pt7Line4_StreetNumberName>51 Saint Nicholas Ave</Pt7Line4_StreetNumberName>
-<Pt7Line4_AptSteFlrNumber></Pt7Line4_AptSteFlrNumber>
-<Pt7Line4_CityOrTown>New York</Pt7Line4_CityOrTown>
-<Pt7Line4_State>NY</Pt7Line4_State>
-<Pt7Line4_ZipCode>10026</Pt7Line4_ZipCode>
-<Pt7Line5_DaytimePhone>2122818600</Pt7Line5_DaytimePhone>
-<Pt7Line7_EmailAddress>durant@developmentalondemand.com</Pt7Line7_EmailAddress>
-<Pt8Line1B1a_name>RPR</Pt8Line1B1a_name>
-<Pt8Line1C1a_name>NG Urine PCR</Pt8Line1C1a_name>
-<Pt10Line1_NotAge1>1</Pt10Line1_NotAge1>
-<Pt10Line3_NotAge3>0</Pt10Line3_NotAge3>
-<Pt10Line5_NotAge5>1</Pt10Line5_NotAge5>
-<Pt10Line8_NotAge8>1</Pt10Line8_NotAge8>
-<Pt10Line10_NotAge10>1</Pt10Line10_NotAge10>
-<Pt10Line11_NotAge11>1</Pt10Line11_NotAge11>
-<Pt10Line12_NotAge12>1</Pt10Line12_NotAge12>
-<Pt10Line9_InfluVaccineInsufficient9>1</Pt10Line9_InfluVaccineInsufficient9>
-<P10_Remarks>Currently not flu season.</P10_Remarks>
-<Pt7Line3_Unit></Pt7Line3_Unit>
-<Pt7Line4_Unit></Pt7Line4_Unit>
-<Pt8Line2A_Disorders>1</Pt8Line2A_Disorders>
-<Pt8Line1D1_Findings>a</Pt8Line1D1_Findings>
-<Pt8Line3A_Findings>1</Pt8Line3A_Findings>
-<Pt10_PVVaccineCheckBox>0</Pt10_PVVaccineCheckBox>
-<P10_TDVaccineCheckBox>Td</P10_TDVaccineCheckBox>
-<!--End of form prefill -->
-</form1>
-</xfa:data>
-</xfa:datasets>
-<pdf href=\"Z:/i693 Forms/1i-693-Office - 1unlocked.pdf\" xmlns=\"http://ns.adobe.com/xdp/pdf/\"/>
-</xdp:xdp>";
-		
-		$output3 = "";
-		$output3 .= $_POST['FirstName'] . "," . $_POST['LastName'] . "," . $_POST['dob'] . "," . $_POST['DaytimeTelephone'] . "," . $_POST['MobileTelephone'] . "," . $_POST['Emailaddres'] . "," . $_POST['find'] . "," . $_POST['examination'] . "," . $_POST['lawyer'] . "," . $_POST['lawyer-name'] . "," . $_POST['lawyer-company'] . "," . $_POST['lawyer-phone'] . "," . $today;
-		
-		
-		$filename = $_POST['FirstName'] . "_" . $_POST['LastName'] . "_" . $FilenameDate . "_pt.xml";
-		
-		$Newsubject = "i693 Form Data " . $_POST['FirstName'] . "_" . $_POST['LastName'] . "_" . $FilenameDate;
-		
-		//file_put_contents("$filename", $output);
-		file_put_contents("i693FormData.xml", $output);
-		file_put_contents("i693FormData.xdp", $output2);
-		file_put_contents("i693Survey.txt", $output3);
-		
-		// then send email
-		
-		$subject = "$Newsubject";
-		//$body = "Please find the attachment for XML file";
-		$loc = $_POST['location'];
-		if ($loc == "1513V") {
-			$FulLoc = "Location: 1513 Voorhies Ave 3rd Floor, Brooklyn, NY 11235";
-		} else if ($loc == "51SN") {
-			$FulLoc = "Location: 51 Saint Nicholas Ave, Ground Floor, New York, NY 10026";
-		} else if ($loc == "68E") {
-			// Old Address
-			// $FulLoc = "Location: 68e 131st Street Suite 100, New York, NY 10037";
-			$FulLoc = "Location: 51 Saint Nicholas Ave, Ground Floor, New York, NY 10026";
-		} else {
-			$FulLoc = "No location selected";
-		}
-		
-		$body = "Please find the attachment for XML file." . "\r\n";
-		$body .= $_POST['appointmentfield'] . "\n";
-		$body .= $FulLoc;;
-		
-		$attachments2 = array("i693FormData.xml", "i693FormData.xdp", "i693Survey.txt");
-		$attachments = array("$filename");
-		
-		// wp_mail($to, $subject, $body, $headers, $attachments);
-		wp_mail($to, $subject, $body, $headers, $attachments2);
-	}
+function gcm_i693_attachments($form, $data, $dob, $today) {
+    if ($form->additional_setting('gcm_export', 0) !== array('i693')) {
+        throw new UnexpectedValueException('Select exactly one i693 export adapter');
+    }
+    foreach (array('FirstName', 'LastName', 'dob') as $required) {
+        if (!isset($data[$required]) || trim($data[$required]) === '') {
+            throw new UnexpectedValueException('Missing applicant identity fields');
+        }
+    }
+    // Field names map to the existing demographic import contract. No exam,
+    // vaccination, laboratory, clinician attestation or practice-address defaults.
+    $mapping = array(
+        'Pt1Line1b_GivenName' => 'FirstName', 'Pt1Line1a_FamilyName' => 'LastName',
+        'Pt1Line1c_MiddleName' => 'MiddleName', 'Pt1Line2_StreetNumberName' => 'Street',
+        'Pt1Line2_Unit' => 'ApartmentType', 'Pt1Line2_AptSteFlrNumber' => 'Apartment',
+        'P1Line2_CityOrTown' => 'CityTown', 'P1Line2_State' => 'State',
+        'P1Line2_ZipCode' => 'ZipCode', 'Pt1Line3_Gender' => 'Gender',
+        'Pt1Line3_CityTownVillageofBirth' => 'CityBirth', 'Pt1Line3_CountryofBirth' => 'CountryBirth',
+        'Pt1Line3e_AlienNumber' => 'ANumber', 'Pt1Line3f_USCISOnlineAcctNumber' => 'USCIS',
+        'Pt2Line3_DaytimePhone' => 'DaytimeTelephone', 'Pt2Line4_Mobilephone' => 'MobileTelephone',
+        'Pt2Line5_EmailAddress' => 'Emailaddres',
+    );
+    $fields = "<form1>\n";
+    foreach ($mapping as $xml_name => $input_name) {
+        $fields .= '  <' . $xml_name . '>' . esc_xml($data[$input_name] ?? '') . '</' . $xml_name . ">\n";
+    }
+    $fields .= '  <Pt1Line3_DateOfBirth>' . esc_xml($dob) . "</Pt1Line3_DateOfBirth>\n</form1>\n";
+    $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" . $fields;
+    $xdp = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    $xdp .= '<xdp:xdp xmlns:xdp="http://ns.adobe.com/xdp/" timeStamp="' . esc_attr(gmdate('Y-m-d\TH:i:s\Z')) .
+        '" uuid="' . esc_attr(wp_generate_uuid4()) . '">' . "\n";
+    $xdp .= '<xfa:datasets xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/"><xfa:data>' . "\n" . $fields .
+        "</xfa:data></xfa:datasets>\n";
+    $templates = $form->additional_setting('gcm_i693_pdf', 0);
+    if (count($templates) > 1 || (count($templates) === 1 &&
+        !preg_match('/^[A-Za-z0-9][A-Za-z0-9 _.-]{0,119}\.pdf$/D', $templates[0]))) {
+        throw new UnexpectedValueException('PDF template must be a single local basename');
+    }
+    if ($templates) {
+        // A clinician/operator-selected local template only: no network URL or old drive path.
+        $xdp .= '<pdf xmlns="http://ns.adobe.com/xdp/pdf/" href="' . esc_attr($templates[0]) . "\"/>\n";
+    }
+    $xdp .= "</xdp:xdp>\n";
+    $columns = array('FirstName', 'LastName', 'dob', 'DaytimeTelephone', 'MobileTelephone',
+        'Emailaddres', 'find', 'examination', 'lawyer', 'lawyer-name', 'lawyer-company', 'lawyer-phone');
+    $row = array_map(static function ($key) use ($data) {
+        $value = $data[$key] ?? '';
+        // CSV is data, not a spreadsheet instruction (including leading whitespace).
+        return preg_match('/^[\s]*[=+@-]/u', $value) ? "'" . $value : $value;
+    }, $columns);
+    $row[] = $today;
+    $stream = fopen('php://memory', 'w+');
+    if (!$stream) {
+        throw new RuntimeException('Could not create in-memory survey');
+    }
+    try {
+        if (fputcsv($stream, $row, ',', '"', '', "\r\n") === false || !rewind($stream)) {
+            throw new RuntimeException('Could not encode survey');
+        }
+        $survey = stream_get_contents($stream);
+        if ($survey === false) {
+            throw new RuntimeException('Could not read survey');
+        }
+    } finally {
+        fclose($stream);
+    }
+    $attachments = array('i693FormData.xml' => $xml, 'i693FormData.xdp' => $xdp, 'i693Survey.txt' => $survey);
+    if (!empty($data['appointmentfield']) || !empty($data['location'])) {
+        $attachments['i693Appointment.txt'] = "Applicant-supplied appointment details; not verified against scheduling.\n" .
+            ($data['appointmentfield'] ?? '') . "\nLocation selection: " . ($data['location'] ?? '') . "\n";
+    }
+    return $attachments;
 }
-
-/**
- * If the i693 included an insurance name, wrap the value such as: k^Hello^k
- * (The k^^k formatting was requested by Kirill so his script can alert staff members to get the proper insurance code for the form)
- *
- * @param array $posted_data
- *
- * @return array
- */
-function gcm_add_prefix_to_insurance_id( $posted_data ) {
-	// This transformation belongs only to the existing i693 handler above, not
-	// every CF7 form (including the separately installed clinical intake/referral).
-	$form = wpcf7_get_current_contact_form();
-	if (!$form || (int) $form->id() !== 3170) {
-		return $posted_data;
-	}
-	
-	if ( !empty( $posted_data['insurance_name'] ) && is_string($posted_data['insurance_name']) ) {
-		$posted_data['insurance_name'] = 'k^' . $posted_data['insurance_name'] . '^k';
-	}
-	
-	/*
-	if ( !empty( $posted_data['insurance_id'] ) ) {
-		$posted_data['insurance_id'] = 'k^' . $posted_data['insurance_id'] . '^k';
-	}
-	*/
-	
-	return $posted_data;
-}
-add_filter( 'wpcf7_posted_data', 'gcm_add_prefix_to_insurance_id', 10, 1 );

@@ -26,9 +26,8 @@ function gcm_shortcode_displaydate7() {
 // https://greatcitymedical.com/i693form/?date1=2023-07-19&time=12%3A50%20PM&location=68E (old address)
 // https://greatcitymedical.com/i693form/?date1=2023-07-19&time=12%3A50%20PM&location=51SN
 function gcm_shortcode_getaptdate() {
-	$date1 = $_GET['date1'];
-	$aptdate = date("m/d/Y", strtotime($date1));
-	return $aptdate;
+	$date = gcm_i693_form_date();
+	return is_string($date) ? $date : '';
 }
 
 // used on i639 form, this value is stored in a field that is then submitted in the contact form

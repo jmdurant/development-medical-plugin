@@ -1,249 +1,128 @@
 <?php
-
 /**
- * Customizations to the i693 form at:
- * https://greatcitymedical.com/i693form/
- *
- * With today's date:
- * https://greatcitymedical.com/i693form/?date1=Today&time=11-42-AM
- *
- * With specific date:
- * https://greatcitymedical.com/i693form/?date1=2024-01-03&time=12%3A20%20PM&location=68E (old address)
- * https://greatcitymedical.com/i693form/?date1=2023-07-19&time=12%3A50%20PM&location=51SN
- *
- * With custom expiration date and time:
- * https://greatcitymedical.com/i693form/?date1=Today&time=11-42-AM&expd=2024-01-03&expt=12%3A20%20PM
+ * Advisory appointment-link display for the optional i693 intake form.
+ * Query parameters are untrusted display hints, NOT appointment verification or
+ * an authorization/expiry token. Public intake does not read an existing chart.
  */
-
-/**
- * Check if the current URL includes an i693 form link that has expired.
- *
- * @param string &$debug_message  Optional and by reference. Debugging details will be stored here.
- *
- * @return bool
- */
-function gcm_is_i693_link_expired( &$debug_message = '' ) {
-	// Do not apply if the form is currently being submitted
-	if ( isset($_POST['_wpcf7']) ) return false;
-	
-	// Check if the 'exp' query parameter is set
-	$expiration_date = isset($_GET['exp']) ? stripslashes($_GET['exp']) : false;
-	if ( ! $expiration_date ) return false;
-	
-	// How long after the expiration date should the form be available?
-	$grace_period = 30 * MINUTE_IN_SECONDS;
-	
-	// Convert the expiration date to a timestamp
-	$exp_ts = strtotime($expiration_date);
-	
-	// Check that the expiration date is valid (2024 or later)
-	if ( $exp_ts < strtotime('2024-01-01') ) {
-		$debug_message = '<h4><strong>[Debug] Error: Invalid expiration date: "' . esc_html($expiration_date) . '"</strong></h4>';
-		return false;
-	}
-	
-	// Current timestamp
-	// $current_ts = current_time('timestamp'); // server time
-	$current_ts = time(); // utc
-	
-	// Get number of seconds until the link expires
-	$diff = $current_ts - ($exp_ts + $grace_period);
-	
-	// Check if expired
-	$is_expired = $diff > 0;
-	
-	// Calculate how long ago the link expired, or how long until it expires
-	$remaining = gcm_get_time_remaining( $diff );
-	
-	// Create a debug message that includes details used in the calculation
-	$debug_message = '<pre>';
-	$debug_message .= '';
-	
-	if ( $is_expired ) {
-		$debug_message .= '<strong>[Debug] This link expired ' . $remaining . ' ago.</strong>' . "\n";
-	} else {
-		$debug_message .= '<strong>[Debug] This link will expire in ' . $remaining . '.</strong>' . "\n";
-	}
-	
-	$debug_message .= '        Time Now (UTC): ' . date('m/d/Y h:i:s a', $current_ts) . "\n";
-	$debug_message .= '        Expiration:     ' . date('m/d/Y h:i:s a', $exp_ts) . "\n";
-	$debug_message .= '        Grace Period:   ' . gcm_get_time_remaining($grace_period) . "\n";
-	$debug_message .= '</pre>';
-	
-	return $is_expired;
+function gcm_i693_query($key) {
+    if (!array_key_exists($key, $_GET)) { return null; }
+    $value = $_GET[$key];
+    return is_string($value) && strlen($value) <= 256 ? trim(wp_unslash($value)) : false;
 }
 
-// Hook into 'wpcf7_form_elements' to filter the form output
-function gcm_replace_i693_form_if_expired( $form ) {
-	// Whether to show a debug messages, if &debug is set on the URL
-	$show_debug_message = isset($_GET['debug']);
-	
-	// Store details about the calculation here
-	$debug_message = false;
-	
-	// Check if the link is expired, and store the debug message separately if so.
-	$is_expired = gcm_is_i693_link_expired( $debug_message );
-	
-	// If the link expired, show a message instead of the form
-	if ( $is_expired ) {
-		$form = get_i693_expired_message();
-	}
-	
-	// If debug is enabled, show the debug message above the form
-	if ( $show_debug_message && $debug_message ) {
-		$form = $debug_message . "\n\n" . $form;
-	}
-	
-	// If not expired, return the original form
-	return $form;
-}
-add_filter( 'wpcf7_form_elements', 'gcm_replace_i693_form_if_expired' );
-
-
-/**
- * Convert number of seconds to human-readable string such as: "1 hour, 13 minutes, and 51 seconds"
- *
- * Includes days, hours, minutes, and seconds.
- *
- * @param int $diff
- *
- * @return string
- */
-function gcm_get_time_remaining( $diff ) {
-	$r = abs($diff);
-	$days = floor($r / DAY_IN_SECONDS);
-	$r = $r % DAY_IN_SECONDS;
-	$hours = floor($r / HOUR_IN_SECONDS);
-	$r = $r % HOUR_IN_SECONDS;
-	$minutes = floor($r / MINUTE_IN_SECONDS);
-	$r = $r % MINUTE_IN_SECONDS;
-	$seconds = $r;
-	
-	$remaining = array();
-	if ( $days > 0 ) $remaining[] = sprintf(_n('%d day', '%d days', $days), $days);
-	if ( $hours > 0 ) $remaining[] = sprintf(_n('%d hour', '%d hours', $hours), $hours);
-	if ( $minutes > 0 ) $remaining[] = sprintf(_n('%d minute', '%d minutes', $minutes), $minutes);
-	if ( $seconds > 0 ) $remaining[] = sprintf(_n('%d second', '%d seconds', $seconds), $seconds);
-	$remaining = implode(', ', $remaining);
-	
-	// Replace the last comma with ', and'
-	$remaining = preg_replace('/,([^,]*)$/', ', and$1', $remaining);
-	
-	return $remaining;
+function gcm_i693_form_date() {
+    $raw = gcm_i693_query('date1');
+    if ($raw === null || $raw === '') { return ''; }
+    if ($raw === 'Today') { return wp_date('m/d/Y'); }
+    if ($raw === false) { return false; }
+    $date = DateTimeImmutable::createFromFormat('!Y-m-d', $raw, wp_timezone());
+    return $date && $date->format('Y-m-d') === $raw ? $date->format('m/d/Y') : false;
 }
 
-/**
- * Get the message to show when an appointment link has expired.
- *
- * @return string
- */
+function gcm_is_i693_link_expired(&$debug_message = '') {
+    $expiration = gcm_i693_query('exp');
+    $debug_message = '';
+    if ($expiration === null || $expiration === '') { return false; }
+    $date = false;
+    if (is_string($expiration)) {
+        foreach (array('Y-m-d-H:i:s', 'Y-m-d\TH:i:s\Z', 'Y-m-d\TH:i:sP') as $format) {
+            $candidate = DateTimeImmutable::createFromFormat('!' . $format, $expiration, new DateTimeZone('UTC'));
+            if ($candidate && $candidate->format($format) === $expiration) {
+                $date = $candidate;
+                break;
+            }
+        }
+    }
+    if (!$date) {
+        $debug_message = '<p>Invalid link expiration.</p>';
+        return true;
+    }
+    // Retain the display grace period. Removing/changing this unsigned query
+    // parameter is possible; it is intentionally not used as an access control.
+    $expired = time() > $date->getTimestamp() + 30 * MINUTE_IN_SECONDS;
+    $debug_message = '<p>Link display window ' . ($expired ? 'expired' : 'has not expired') . '.</p>';
+    return $expired;
+}
+
+function gcm_replace_i693_form_if_expired($html) {
+    $form = function_exists('wpcf7_get_current_contact_form') ? wpcf7_get_current_contact_form() : null;
+    if (GCM_Clinical_Form_Mail::kind($form) !== 'i693') { return $html; }
+    $debug = '';
+    if (gcm_is_i693_link_expired($debug)) { $html = get_i693_expired_message(); }
+    if (isset($_GET['debug']) && current_user_can('manage_options')) {
+        $html = $debug . $html;
+    }
+    return $html;
+}
+add_filter('wpcf7_form_elements', 'gcm_replace_i693_form_if_expired');
+
 function get_i693_expired_message() {
-	$message = get_field( 'i639_expired_message', 'gcm_settings' );
-	if ( ! $message ) $message = "We're sorry, the link you followed has expired.";
-	
-	return wpautop( $message );
+    $message = function_exists('get_field') ? get_field('i639_expired_message', 'gcm_settings') : '';
+    if (!is_string($message) || $message === '') {
+        $message = "We're sorry, the link you followed has expired. Please contact the clinic.";
+    }
+    return wpautop(wp_kses_post($message));
 }
 
-/**
- * Get the appointment message for the i693 form page, or the email that is sent to the admins.
- *
- * @param bool $use_form_value  Whether the message should be formatted for display (default, true) or as a form value that is sent in the email (if set to true)
- *
- * @return string
- */
-function get_i693_appointment_message( $use_form_value = false ) {
-	// Get the date, time, and location.
-	$date = isset($_GET['date1']) ? stripslashes($_GET['date1']) : false; // "2024-01-03"
-	$time = isset($_GET['time']) ? stripslashes($_GET['time']) : false; // "12:20 PM"
-	$location = isset($_GET['location']) ? stripslashes($_GET['location']) : false; // "1513V" or "51SN" (old: "68E")
-	if ( !$date && !$time && !$location ) return false;
-	
-	// Format the date as m/d/Y
-	$date = $date ? date( 'm/d/Y', strtotime($date) ) : false;
-	
-	// Get the message template from the settings page
-	if ( $use_form_value ) {
-		// Use the message template formatted for use in the form. This message is sent to the admins.
-		$template = get_field( 'i639_appointment_form_value', 'gcm_settings' );
-		if ( ! $template ) {
-			$template = 'Your appointment is on [date] at [time]';
-		}
-	}else{
-		// Use the message template formatted for the visitor to see. This is shown on the front-end.
-		$template = get_field( 'i639_appointment_message', 'gcm_settings' );
-		if ( ! $template ) {
-			$template = 'Your appointment is on <strong>[date]</strong> at [time], <br>';
-			$template.= '<strong>Location:</strong> [location]';
-		}
-	}
-	
-	$address = '';
-	if ( $location == '1513V' ) $address = '1513 Voorhies Ave 3rd Floor, Brooklyn, NY 11235';
-	if ( $location == '51SN' ) $address = '51 Saint Nicholas Ave, Ground Floor, New York, NY 10026';
-	
-	// Old address links
-	if ( $location == '68E' ) {
-		// $address = '68e 131st Street Suite 100, New York, NY 10037';
-		$address = '51 Saint Nicholas Ave, Ground Floor, New York, NY 10026';
-	}
-	
-	$tags = array(
-		'[date1]' => $date,
-		'[date]' => $date, // (alias)
-		
-		'[time]' => $time,
-		
-		'[location]' => $address,
-		'[address]' => $address, // (alias)
-	);
-	
-	$message = str_replace( array_keys($tags), array_values($tags), $template );
-	
-	return $message;
+/** Resolve only this form's operator-configured public location labels. */
+function gcm_i693_location_label($form, $code) {
+    if (!$form || GCM_Clinical_Form_Mail::kind($form) !== 'i693' || !is_string($code)) { return ''; }
+    foreach ($form->additional_setting('gcm_i693_location', 0) as $location) {
+        $parts = explode('|', $location, 2);
+        if (count($parts) === 2 && preg_match('/^[A-Za-z0-9_-]{1,32}$/D', trim($parts[0])) &&
+            trim($parts[0]) === $code && strlen($parts[1]) <= 512) {
+            return trim($parts[1]);
+        }
+    }
+    return '';
 }
 
-/**
- * Shortcode to display the appointment message on a page.
- *
- *  Appointment link example:
- *  (live)    https://greatcitymedical.com/i693form/?date1=2024-01-03&time=12%3A20%20PM&location=68E&exp=2024-01-06-14:00:00&debug
- *  (staging) https://greatcitymedical.com/i693form/?date1=2024-01-03&time=12%3A20%20PM&location=68E&exp=2024-01-06-14:00:00&debug
- *
- * @param $atts
- * @param $content
- * @param $shortcode_name
- *
- * @return string
- */
-function shortcode_i693_appointment( $atts, $content = '', $shortcode_name = 'i693_appointment' ) {
-	$message = get_i693_appointment_message();
-	if ( ! $message ) return '';
-	
-	$is_expired = gcm_is_i693_link_expired();
-	if ( $is_expired ) return '';
-	
-	ob_start();
-	?>
-	
-	<div class="i693-appointment-card">
-		
-		<div class="wp-block-group container-style-card-x-small has-lightest-blue-background-color has-background is-layout-constrained">
-			<div class="wp-block-group gap-16 is-nowrap is-layout-flex wp-container-3">
-				
-				<?php
-				echo gcm_get_icon_html( 'patient', 'blue', 'circle', 'medium' );
-				?>
-				
-				<div class="i693-content has-blue-color has-text-color">
-					<?php echo $message; ?>
-				</div>
-			
-			</div>
-		</div>
-	
-	</div>
-	
-	<?php
-	return ob_get_clean();
+function get_i693_appointment_message($use_form_value = false, $form = null) {
+    $date = gcm_i693_form_date();
+    $time = gcm_i693_query('time');
+    $location = gcm_i693_query('location');
+    if ($date === false || $time === false || $location === false) { return false; }
+    if (!$date && !$time && !$location) { return false; }
+    $display_time = '';
+    if ($time) {
+        // Support both supplied-link formats, without accepting arbitrary HTML/date prose.
+        $time = preg_replace('/^(\d{1,2})-(\d{2})-(AM|PM)$/i', '$1:$2 $3', $time);
+        foreach (array('g:i A', 'h:i A', 'H:i') as $format) {
+            $parsed = DateTimeImmutable::createFromFormat('!' . $format, strtoupper($time), wp_timezone());
+            if ($parsed && $parsed->format($format) === strtoupper($time)) {
+                $display_time = $parsed->format('g:i A');
+                break;
+            }
+        }
+        if ($display_time === '') { return false; }
+    }
+    if (!$form && function_exists('wpcf7_get_current_contact_form')) { $form = wpcf7_get_current_contact_form(); }
+    $address = gcm_i693_location_label($form, $location);
+    $key = $use_form_value ? 'i639_appointment_form_value' : 'i639_appointment_message';
+    $template = function_exists('get_field') ? get_field($key, 'gcm_settings') : '';
+    if (!is_string($template) || $template === '') {
+        $template = 'Requested appointment details: [date] at [time]. [location]';
+    }
+    $values = array('[date1]' => $date, '[date]' => $date, '[time]' => $display_time,
+        '[location]' => $address, '[address]' => $address);
+    if ($use_form_value) {
+        return str_replace(array_keys($values), array_values($values), wp_strip_all_tags($template));
+    }
+    return wp_kses_post(str_replace(array_keys($values), array_map('esc_html', array_values($values)), $template));
 }
-add_shortcode( 'i693_appointment', 'shortcode_i693_appointment' );
+
+function shortcode_i693_appointment($atts, $content = '', $shortcode_name = 'i693_appointment') {
+    $atts = shortcode_atts(array('form_id' => ''), $atts, $shortcode_name);
+    $form = null;
+    if ($atts['form_id'] !== '') {
+        if (!is_string($atts['form_id']) || !ctype_digit($atts['form_id']) || !class_exists('WPCF7_ContactForm')) { return ''; }
+        $form = WPCF7_ContactForm::get_instance((int) $atts['form_id']);
+        if (GCM_Clinical_Form_Mail::kind($form) !== 'i693') { return ''; }
+    }
+    $message = get_i693_appointment_message(false, $form);
+    if (!$message || gcm_is_i693_link_expired()) { return ''; }
+    return '<div class="i693-appointment-card"><div class="wp-block-group container-style-card-x-small">' .
+        '<div class="i693-content">' . $message .
+        '<p>These link details do not confirm a booking. Contact the clinic to verify your appointment.</p></div></div></div>';
+}
+add_shortcode('i693_appointment', 'shortcode_i693_appointment');

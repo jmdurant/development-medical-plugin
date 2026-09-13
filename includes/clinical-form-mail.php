@@ -1,6 +1,6 @@
 <?php
 /**
- * Mail transport for the four installed clinical forms. External respondents do
+ * Mail transport for installed clinical forms and the optional i693 adapter. External respondents do
  * not need EHR accounts. CF7 owns validation, spam checks and delivery status.
  * Generated attachments stay in memory: never in the public uploads/web root.
  */
@@ -14,6 +14,7 @@ final class GCM_Clinical_Form_Mail {
             'vanderbilt' => array('Vanderbilt report', 'student_dob', null),
             'teacher_report' => array('Teacher report', 'student_dob', 'teacher_email'),
             'pcp_referral' => array('Referral', 'patient_dob', 'physician_email'),
+            'i693' => array('i693 applicant intake', 'dob', null),
         );
     }
 
@@ -22,10 +23,14 @@ final class GCM_Clinical_Form_Mail {
             return null;
         }
         foreach (self::kinds() as $kind => $spec) {
+            if ($kind === 'i693') { continue; }
             $id = (int) get_option('gcm_' . $kind . '_form_id');
             if ($id > 0 && $id === (int) $form->id()) {
                 return $kind;
             }
+        }
+        if ($form->additional_setting('gcm_export', 0)) {
+            return 'i693'; // Validation rejects unknown/duplicate adapter settings, not a silent fallback.
         }
         return null;
     }
@@ -121,6 +126,12 @@ final class GCM_Clinical_Form_Mail {
                     $xml = generate_pcp_referral_xml($data, $date, $today);
                     $summary = generate_pcp_referral_summary($data, $today);
                     break;
+                case 'i693':
+                    $attachments = gcm_i693_attachments($form, $data, $date, $today);
+                    break;
+            }
+            if ($kind !== 'i693') {
+                $attachments = array($kind . '.xml' => $xml, $kind . '_summary.txt' => $summary);
             }
             // No patient identifiers in envelope/subject; clinical content is attached.
             $mail['subject'] = $spec[0] . ' submission';
@@ -146,7 +157,7 @@ final class GCM_Clinical_Form_Mail {
             $token = bin2hex(random_bytes(16));
             self::$pending[spl_object_id($form)] = array(
                 'token' => $token,
-                'attachments' => array($kind . '.xml' => $xml, $kind . '_summary.txt' => $summary),
+                'attachments' => $attachments,
             );
             // In-memory properties only: do not overwrite the operator's saved CF7 configuration.
             $form->set_properties(array('mail' => $mail, 'mail_2' => $ack));
@@ -180,7 +191,8 @@ final class GCM_Clinical_Form_Mail {
                 self::$owned_mail = true;
                 try {
                     foreach ($pending['attachments'] as $name => $bytes) {
-                        if (!$mailer->addStringAttachment($bytes, $name, 'base64', str_ends_with($name, '.xml') ? 'application/xml' : 'text/plain')) {
+                        $type = str_ends_with($name, '.xml') ? 'application/xml' : (str_ends_with($name, '.xdp') ? 'application/vnd.adobe.xdp+xml' : 'text/plain');
+                        if (!$mailer->addStringAttachment($bytes, $name, 'base64', $type)) {
                             throw new \PHPMailer\PHPMailer\Exception('Could not attach clinical form');
                         }
                     }
