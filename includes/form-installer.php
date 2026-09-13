@@ -189,11 +189,7 @@ function gcm_create_form_page( $title, $form_id, $form_key ) {
 <!-- /wp:group -->';
 
     if ( $existing_page ) {
-        // Update existing page content with current form ID
-        wp_update_post( array(
-            'ID' => $existing_page->ID,
-            'post_content' => $page_content,
-        ) );
+        // Installation is not a content reset. Retain operator edits on retry.
         return $existing_page->ID;
     }
 

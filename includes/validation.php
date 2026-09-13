@@ -1,8 +1,8 @@
 <?php
 
 function gcm_enqueue_validation_js() {
-	$methods = get_field( 'validation_methods', 'options' ); // array( string $class, string[] $methods )
-	$limit_prefixes = get_field( 'character_limit_class_prefix', 'options' );
+	$methods = function_exists('get_field') ? get_field( 'validation_methods', 'options' ) : array();
+	$limit_prefixes = function_exists('get_field') ? get_field( 'character_limit_class_prefix', 'options' ) : array();
 	
 	$settings = array(
 		'methods' => $methods,
