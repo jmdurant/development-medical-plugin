@@ -1,29 +1,30 @@
-# Developmental Evaluation Intake Form Template
+# Developmental Intake — Contact Form 7
 
-This template provides the HTML structure for a Contact Form 7 developmental evaluation intake form using the custom field-group styling.
+## Deployment and current contract
 
-## Setup Instructions
+Normal Practice Stack setup invokes `gcm_install_evaluation_forms()` and creates
+the native form/page binding in `gcm_developmental_eval_form_id` and its `_page` option.
+Use the current form in `includes/form-installer.php`; no PHP form-ID edits or
+extra includes are required. Existing editor content is retained on install retry.
 
-1. **Create a new Contact Form 7 form** in WordPress Admin → Contact → Contact Forms
-2. **Copy the HTML below** into the form editor
-3. **Note the Form ID** (shown in the URL or form list)
-4. **Update the PHP file**: Edit `includes/developmental-eval-form.php` and replace `XXXX` with your form ID
-5. **Include the file**: Add to `developmentalondemand.php`:
-   ```php
-   include( __DIR__ . '/includes/developmental-eval-form.php' );
-   ```
+Configure fixed clinical recipients/sender in CF7’s Mail tab. Public contact
+settings do not select clinical recipients. The shared transport owns generic
+subjects/bodies and in-memory XML/TXT attachments; do not put patient information
+in email headers or send a second clinical copy to an unverified respondent.
+This form sends one primary clinical mail, without a respondent acknowledgement.
 
-## Features
+Primary mail/attachment failure reports failure. Mail acceptance does not prove
+inbox delivery, EHR import, clinical review or appointment confirmation. Record
+matching and record-submission instructions remain clinic workflows.
 
-- Multi-step form structure with visual step indicators
-- Responsive grid layout (3 columns → 1 column on mobile)
-- Custom validation using plugin's validation.js
-- Generates XML and TXT attachments for each submission
-- Professional styling matching your theme
+Only current declared form fields are exported. CF7 owns native validation and
+spam/acceptance checks, with additional bounded-shape/choice checks in the shared
+transport. Frontend CSS/JavaScript validation classes are not an access control.
+See `readme.md` for exact bounds, recipient rules and the guarded native tests.
 
-## Contact Form 7 HTML Template
+## HTML reference
 
-Copy everything below into your Contact Form 7 form editor:
+This reference does not replace the installed form schema or deployment setup.
 
 ```html
 <div class="field-group-heading">
@@ -328,37 +329,14 @@ Copy everything below into your Contact Form 7 form editor:
 </div>
 ```
 
-## Available Validation Classes
+## Testing and clinical/privacy boundaries
 
-Use these CSS classes on form fields for automatic validation:
+Run Practice Stack’s `native-submissions` acceptance action on its isolated
+synthetic fixture. The owning `tests/native-clinical-mail.php` probe uses actual
+CF7 and PHPMailer MIME/result hooks, with transport intercepted before delivery.
+Do not run that fixture or transmit sample clinical submissions to real recipients.
 
-- `letters_space` - Only letters and spaces allowed
-- `digits` - Only numbers allowed
-- `alphanumeric` - Letters and numbers only
-- `JVminlength-X` - Minimum X characters (e.g., `JVminlength-5`)
-- `JVmaxlength-X` - Maximum X characters (e.g., `JVmaxlength-10`)
-
-## Customization Tips
-
-1. **Change evaluation types**: Edit the `evaluation_type` select dropdown
-2. **Add/remove fields**: Follow the same HTML structure pattern
-3. **Modify step numbers**: Update the step indicators (Step 1/3, Step 2/3, etc.)
-4. **Add conditional fields**: Use the Conditional Fields for CF7 plugin with `[group name]...[/group]` syntax
-5. **Customize XML output**: Edit `generate_developmental_eval_xml()` in `developmental-eval-form.php`
-
-## Testing
-
-1. Submit a test form
-2. Check that email arrives with XML and TXT attachments
-3. Verify XML structure is correct for your needs
-4. Adjust field names in PHP file if needed to match your XML requirements
-
-## Adapting for Other Forms
-
-To create a new form type:
-
-1. Copy `developmental-eval-form.php` to `new-form-type.php`
-2. Change the form ID check
-3. Modify the XML structure in `generate_*_xml()` function
-4. Update field names to match your new form
-5. Include the new file in `developmentalondemand.php`
+The web form remains available for its intended intake/external role; it does not
+require an EHR account or grant access to an existing patient record. Any downstream
+matching/import must be separately authenticated and verified. This template is
+not a certification of HIPAA compliance or of a deployed mail provider’s controls.

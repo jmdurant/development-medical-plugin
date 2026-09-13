@@ -1,38 +1,31 @@
-# PCP Referral Form Template
+# PCP Referral — Contact Form 7
 
-This form allows primary care physicians to submit referral information for patients needing developmental evaluations **without transmitting detailed medical records via unsecured email**.
+## Deployment and current contract
 
-## Key Features
+Normal Practice Stack setup invokes `gcm_install_evaluation_forms()` and creates
+the native form/page binding in `gcm_pcp_referral_form_id` and its `_page` option.
+Use the current form in `includes/form-installer.php`; no PHP form-ID edits or
+extra includes are required. Existing editor content is retained on install retry.
 
-- **Minimal PHI** - Only patient name + DOB for matching
-- **Secure Records Workflow** - Medical records sent separately via secure fax
-- **Automatic Confirmation** - Physician receives confirmation with fax instructions
-- **Structured Data** - Generates XML for easy processing
-- **Parent Contact Info** - Enables direct scheduling contact
+Configure fixed clinical recipients/sender in CF7’s Mail tab. Public contact
+settings do not select clinical recipients. The shared transport owns generic
+subjects/bodies and in-memory XML/TXT attachments; do not put patient information
+in email headers or send a second clinical copy to an unverified respondent.
+The external respondent receives only a generic acknowledgement after primary
+mail succeeds, with no patient identifiers, answers or attachments.
 
-## Setup Instructions
+Primary mail/attachment failure reports failure. Mail acceptance does not prove
+inbox delivery, EHR import, clinical review or appointment confirmation. Record
+matching and record-submission instructions remain clinic workflows.
 
-1. **Create Contact Form 7 form**: WordPress Admin → Contact → Contact Forms → Add New
-2. **Copy the HTML template** below into the form editor
-3. **Note the Form ID** (shown in URL or form list)
-4. **Update PHP file**: Edit `includes/pcp-referral-form.php` line 22, replace `XXXX` with form ID
-5. **Update fax number**: Edit line 86 in PHP file with your practice fax number
-6. **Include the file**: Add to `developmentalondemand.php`:
-   ```php
-   include( __DIR__ . '/includes/pcp-referral-form.php' );
-   ```
-7. **Share link with PCPs**: Provide referral form URL
+Only current declared form fields are exported. CF7 owns native validation and
+spam/acceptance checks, with additional bounded-shape/choice checks in the shared
+transport. Frontend CSS/JavaScript validation classes are not an access control.
+See `readme.md` for exact bounds, recipient rules and the guarded native tests.
 
-## Workflow
+## HTML reference
 
-1. **PCP completes online referral** - Provides patient identifiers and referral reason
-2. **System processes** - Generates XML attachment and sends to admin email
-3. **PCP gets confirmation** - Email includes fax number for medical records
-4. **PCP faxes records** - Sends actual medical documentation via secure fax
-5. **Staff matches referral** - Uses patient name + DOB to link to patient record
-6. **Staff contacts parent** - Schedules evaluation using contact info from referral
-
-## Contact Form 7 HTML Template
+This reference does not replace the installed form schema or deployment setup.
 
 ```html
 <div class="field-group-heading">
@@ -237,7 +230,7 @@ This form allows primary care physicians to submit referral information for pati
 
 <div class="field-group-heading">
 	<h3 class="title">Medical Records</h3>
-	<p><strong>Important:</strong> Please fax medical records, growth charts, developmental history, and any previous evaluation reports separately to our secure fax line. You will receive our fax number in the confirmation email.</p>
+	<p><strong>Important:</strong> Contact the clinic for instructions on sending medical records separately. Do not attach records to this referral form.</p>
 </div>
 
 <div class="field-group group-submit">
@@ -249,100 +242,14 @@ This form allows primary care physicians to submit referral information for pati
 </div>
 ```
 
-## What Happens After Submission
+## Testing and clinical/privacy boundaries
 
-1. **Staff receives email** with:
-   - Subject: "PCP Referral - [Patient Name] - [Referral Reason]"
-   - Body with referral summary
-   - XML attachment with structured data
-   - TXT summary for quick review
+Run Practice Stack’s `native-submissions` acceptance action on its isolated
+synthetic fixture. The owning `tests/native-clinical-mail.php` probe uses actual
+CF7 and PHPMailer MIME/result hooks, with transport intercepted before delivery.
+Do not run that fixture or transmit sample clinical submissions to real recipients.
 
-2. **Physician receives confirmation** with:
-   - Thank you message
-   - Practice fax number for medical records
-   - Assurance that family will be contacted
-
-3. **Staff workflow**:
-   - Match referral to patient record using name + DOB
-   - Create/update patient file
-   - Contact parent to schedule evaluation
-   - Request medical records via fax if not received
-   - Send evaluation report to referring physician when complete
-
-## Example Email Output
-
-**To Staff:**
-```
-Subject: PCP Referral - John Doe - ADHD Evaluation
-
-PCP Referral Form Submission
-
-Patient: John Doe
-DOB: 05/15/2015
-Referring Physician: Dr. Sarah Johnson
-Practice: Pediatric Associates
-Referral Reason: ADHD Evaluation
-Submission Date: 10/03/2025
-
-Please find attached referral data.
-Match this referral to patient record using patient name and DOB.
-Request medical records via secure fax if not already received.
-```
-
-**To Referring Physician:**
-```
-Subject: Referral Received - John Doe
-
-Dear Dr. Sarah Johnson,
-
-Thank you for referring John Doe to Developmental On Demand for evaluation.
-
-We have received your referral and will contact the family to schedule an appointment.
-
-If you have not already done so, please fax medical records and relevant documentation to:
-Fax: (XXX) XXX-XXXX
-
-We will send you a copy of our evaluation report once completed.
-
-Best regards,
-Developmental On Demand
-```
-
-## Privacy & Security
-
-✅ **HIPAA-Compliant Approach:**
-- Only minimal identifiers collected (name + DOB)
-- No detailed medical history via unsecured email
-- Clinical records transmitted via secure fax
-- Physician confirmation email contains no patient PHI
-
-❌ **What NOT to collect via this form:**
-- Detailed medical history
-- Current medications/diagnoses
-- Previous evaluation results
-- Social security numbers or insurance policy numbers
-
-## Customization
-
-**Add/Remove Fields:**
-- Follow the same field-group HTML structure
-- Update XML generation in `generate_pcp_referral_xml()`
-- Adjust summary format in `generate_pcp_referral_summary()`
-
-**Change Referral Reasons:**
-- Modify dropdown options to match your service offerings
-- Add specialty-specific referral types
-
-**Additional Referral Sources:**
-- Copy this template for Specialist Referrals, School Referrals, etc.
-- Change form ID and processing function name
-- Adapt fields to referral source
-
-## Testing
-
-1. Create test referral with patient "Test Patient" DOB 01/01/2010
-2. Fill as referring physician
-3. Verify XML attachment received by staff
-4. Check physician received confirmation with fax number
-5. Verify you can match to patient using name + DOB
-6. Test fax workflow for medical records
+The web form remains available for its intended intake/external role; it does not
+require an EHR account or grant access to an existing patient record. Any downstream
+matching/import must be separately authenticated and verified. This template is
+not a certification of HIPAA compliance or of a deployed mail provider’s controls.

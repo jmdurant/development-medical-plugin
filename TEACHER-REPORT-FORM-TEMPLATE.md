@@ -1,36 +1,31 @@
-# Teacher Report Form Template
+# Teacher Report — Contact Form 7
 
-This form allows teachers to submit behavioral and academic observations for students undergoing developmental evaluations **without needing access to your EHR system**.
+## Deployment and current contract
 
-## Key Features
+Normal Practice Stack setup invokes `gcm_install_evaluation_forms()` and creates
+the native form/page binding in `gcm_teacher_report_form_id` and its `_page` option.
+Use the current form in `includes/form-installer.php`; no PHP form-ID edits or
+extra includes are required. Existing editor content is retained on install retry.
 
-- **No EHR Access Required** - Teachers can submit reports independently
-- **Patient Matching** - Uses student name + DOB to match with patient records later
-- **Automatic Confirmation** - Teacher receives thank you email confirmation
-- **Structured Data** - Generates XML for easy data import/processing
-- **Comprehensive Assessment** - Covers academic, behavioral, and social-emotional domains
+Configure fixed clinical recipients/sender in CF7’s Mail tab. Public contact
+settings do not select clinical recipients. The shared transport owns generic
+subjects/bodies and in-memory XML/TXT attachments; do not put patient information
+in email headers or send a second clinical copy to an unverified respondent.
+The external respondent receives only a generic acknowledgement after primary
+mail succeeds, with no patient identifiers, answers or attachments.
 
-## Setup Instructions
+Primary mail/attachment failure reports failure. Mail acceptance does not prove
+inbox delivery, EHR import, clinical review or appointment confirmation. Record
+matching and record-submission instructions remain clinic workflows.
 
-1. **Create Contact Form 7 form**: WordPress Admin → Contact → Contact Forms → Add New
-2. **Copy the HTML template** below into the form editor
-3. **Note the Form ID** (shown in URL or form list)
-4. **Update PHP file**: Edit `includes/teacher-report-form.php` line 21, replace `XXXX` with form ID
-5. **Include the file**: Add to `developmentalondemand.php`:
-   ```php
-   include( __DIR__ . '/includes/teacher-report-form.php' );
-   ```
-6. **Share link with teachers**: Give them direct URL like `yoursite.com/teacher-report`
+Only current declared form fields are exported. CF7 owns native validation and
+spam/acceptance checks, with additional bounded-shape/choice checks in the shared
+transport. Frontend CSS/JavaScript validation classes are not an access control.
+See `readme.md` for exact bounds, recipient rules and the guarded native tests.
 
-## Workflow
+## HTML reference
 
-1. **Send link to teacher** - Provide teacher with form URL and student's name + DOB
-2. **Teacher completes form** - No login required, just student identifiers
-3. **System processes** - Generates XML attachment with all observations
-4. **Staff matches to patient** - Use student name + DOB to link report to EHR
-5. **Teacher gets confirmation** - Automatic thank you email
-
-## Contact Form 7 HTML Template
+This reference does not replace the installed form schema or deployment setup.
 
 ```html
 <div class="field-group-heading">
@@ -354,59 +349,14 @@ This form allows teachers to submit behavioral and academic observations for stu
 </div>
 ```
 
-## Email Confirmations
+## Testing and clinical/privacy boundaries
 
-**Staff receives:**
-- Email with subject: "Teacher Report - [Student Name] - [Teacher Name]"
-- XML attachment with structured data
-- TXT summary for quick review
-- Matching instructions (use student name + DOB)
+Run Practice Stack’s `native-submissions` acceptance action on its isolated
+synthetic fixture. The owning `tests/native-clinical-mail.php` probe uses actual
+CF7 and PHPMailer MIME/result hooks, with transport intercepted before delivery.
+Do not run that fixture or transmit sample clinical submissions to real recipients.
 
-**Teacher receives:**
-- Thank you confirmation email
-- No sensitive patient information
-- Assurance their report will be reviewed
-
-## Matching Report to Patient Record
-
-The XML includes:
-```xml
-<student_identifiers>
-  <first_name>John</first_name>
-  <last_name>Doe</last_name>
-  <date_of_birth>05/15/2015</date_of_birth>
-</student_identifiers>
-```
-
-Use these identifiers to match the teacher report to your patient in the EHR.
-
-## Privacy Considerations
-
-- Teacher only provides student name + DOB (minimal PHI)
-- No patient ID numbers or sensitive details
-- Teacher email kept separate from patient record
-- Can be HIPAA compliant with proper BAA if needed
-
-## Customization
-
-**Add/Remove Questions:**
-- Follow the same field-group HTML structure
-- Update XML generation in `generate_teacher_report_xml()`
-- Adjust summary format in `generate_teacher_report_summary()`
-
-**Change Rating Scales:**
-- Modify dropdown options to match your preferred scales
-- Update field names if needed
-
-**Additional Report Types:**
-- Copy this template for Parent Reports, Therapist Reports, etc.
-- Change form ID and processing function name
-- Adapt questions to source (parent vs teacher vs therapist)
-
-## Testing
-
-1. Create test form with student "Test Student" DOB 01/01/2010
-2. Fill as teacher
-3. Verify XML attachment received
-4. Check teacher got confirmation email
-5. Verify you can match to patient using name + DOB
+The web form remains available for its intended intake/external role; it does not
+require an EHR account or grant access to an existing patient record. Any downstream
+matching/import must be separately authenticated and verified. This template is
+not a certification of HIPAA compliance or of a deployed mail provider’s controls.
