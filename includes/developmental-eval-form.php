@@ -10,74 +10,7 @@
  * - Developmental Delay Evaluations
  */
 
-add_action( 'wpcf7_before_send_mail', 'gcm_process_developmental_eval_form' );
-
-/**
- * Process developmental evaluation intake form submissions
- *
- * @param WPCF7_ContactForm $cf7
- * @return void
- */
-function gcm_process_developmental_eval_form( $cf7 ) {
-	$form_id = $cf7->id;
-
-	// Get form ID from options (set by form installer)
-	$target_form_id = get_option( 'gcm_developmental_eval_form_id' );
-	if ( ! $target_form_id ) {
-		return; // Form not installed yet
-	}
-
-	if ( $form_id == $target_form_id ) {
-
-		// Get admin email from ACF settings
-		$admin_email = get_field('primary_email', 'option') ?: 'admin@developmentalondemand.com';
-		$to = $admin_email;
-		$headers = array( "From: " . $cf7->mail['sender'] );
-
-		// Format dates
-		$child_dob = $_POST['child_dob'] ?? '';
-		$formatted_child_dob = $child_dob ? date("m/d/Y", strtotime($child_dob)) : '';
-		$filename_date = $child_dob ? date("mdY", strtotime($child_dob)) : date("mdY");
-		$today = date("m/d/Y");
-
-		// Generate XML data structure for intake form
-		$xml_output = generate_developmental_eval_xml( $_POST, $formatted_child_dob, $today );
-
-		// Generate CSV/TXT summary for quick reference
-		$summary_output = generate_eval_summary( $_POST, $today );
-
-		// Create filenames
-		$child_first = sanitize_file_name( $_POST['child_first_name'] ?? 'Child' );
-		$child_last = sanitize_file_name( $_POST['child_last_name'] ?? 'Unknown' );
-		$base_filename = "{$child_first}_{$child_last}_{$filename_date}";
-
-		// Write files temporarily
-		file_put_contents( "dev_eval_data.xml", $xml_output );
-		file_put_contents( "dev_eval_summary.txt", $summary_output );
-
-		// Email subject
-		$eval_type = $_POST['evaluation_type'] ?? 'Developmental Evaluation';
-		$subject = "{$eval_type} Intake - {$child_first} {$child_last} - {$filename_date}";
-
-		// Email body
-		$body = "Developmental Evaluation Intake Form Submission\n\n";
-		$body .= "Child: {$child_first} {$child_last}\n";
-		$body .= "DOB: {$formatted_child_dob}\n";
-		$body .= "Evaluation Type: {$eval_type}\n";
-		$body .= "Submission Date: {$today}\n\n";
-		$body .= "Please find attached XML data file and summary.\n";
-
-		// Attachments
-		$attachments = array( "dev_eval_data.xml", "dev_eval_summary.txt" );
-
-		// Send email with attachments
-		wp_mail( $to, $subject, $body, $headers, $attachments );
-
-		// Clean up temporary files
-		@unlink( "dev_eval_data.xml" );
-		@unlink( "dev_eval_summary.txt" );
-	}
-}
+// Submission transport is shared in clinical-form-mail.php.
 
 /**
  * Generate XML data structure for developmental evaluation

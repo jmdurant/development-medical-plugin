@@ -210,8 +210,14 @@ function gcm_pre_send_cf7_email_insert_attachments( $cf7 ) {
  * @return array
  */
 function gcm_add_prefix_to_insurance_id( $posted_data ) {
+	// This transformation belongs only to the existing i693 handler above, not
+	// every CF7 form (including the separately installed clinical intake/referral).
+	$form = wpcf7_get_current_contact_form();
+	if (!$form || (int) $form->id() !== 3170) {
+		return $posted_data;
+	}
 	
-	if ( !empty( $posted_data['insurance_name'] ) ) {
+	if ( !empty( $posted_data['insurance_name'] ) && is_string($posted_data['insurance_name']) ) {
 		$posted_data['insurance_name'] = 'k^' . $posted_data['insurance_name'] . '^k';
 	}
 	

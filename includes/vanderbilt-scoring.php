@@ -15,84 +15,7 @@
  * - Neither: Does not meet ADHD criteria
  */
 
-add_action( 'wpcf7_before_send_mail', 'gcm_process_vanderbilt_form' );
-
-/**
- * Process Vanderbilt Assessment form and calculate scores
- *
- * @param WPCF7_ContactForm $cf7
- * @return void
- */
-function gcm_process_vanderbilt_form( $cf7 ) {
-	$form_id = $cf7->id;
-
-	// Get form ID from options (set by form installer)
-	$target_form_id = get_option( 'gcm_vanderbilt_form_id' );
-	if ( ! $target_form_id ) {
-		return; // Form not installed yet
-	}
-
-	if ( $form_id == $target_form_id ) {
-
-		// Get admin email from ACF settings
-		$admin_email = get_field('primary_email', 'option') ?: 'admin@developmentalondemand.com';
-		$to = $admin_email;
-		$headers = array( "From: " . $cf7->mail['sender'] );
-
-		// Student identifiers
-		$student_first = sanitize_text_field( $_POST['student_first_name'] ?? '' );
-		$student_last = sanitize_text_field( $_POST['student_last_name'] ?? '' );
-		$student_dob = $_POST['student_dob'] ?? '';
-		$formatted_dob = $student_dob ? date("m/d/Y", strtotime($student_dob)) : '';
-		$filename_date = $student_dob ? date("mdY", strtotime($student_dob)) : date("mdY");
-		$today = date("m/d/Y");
-
-		// Calculate scores
-		$scores = calculate_vanderbilt_scores( $_POST );
-
-		// Generate XML with scores
-		$xml_output = generate_vanderbilt_xml( $_POST, $scores, $formatted_dob, $today );
-
-		// Generate summary report
-		$summary_output = generate_vanderbilt_summary( $_POST, $scores, $today );
-
-		// Create filenames
-		$base_filename = "{$student_first}_{$student_last}_{$filename_date}_vanderbilt";
-
-		// Write files
-		file_put_contents( "vanderbilt_results.xml", $xml_output );
-		file_put_contents( "vanderbilt_summary.txt", $summary_output );
-
-		// Email subject with indication if positive
-		$interpretation = $scores['interpretation'];
-		$subject = "Vanderbilt Assessment - {$student_first} {$student_last} - {$interpretation}";
-
-		// Email body
-		$body = "Vanderbilt Assessment Results\n\n";
-		$body .= "Student: {$student_first} {$student_last}\n";
-		$body .= "DOB: {$formatted_dob}\n";
-		$body .= "Completed by: " . ( $_POST['respondent_name'] ?? 'Unknown' ) . "\n";
-		$body .= "Date: {$today}\n\n";
-		$body .= "RESULTS:\n";
-		$body .= "--------\n";
-		$body .= "Inattention: {$scores['inattention_count']}/9 items rated 2-3 ";
-		$body .= "(" . ( $scores['inattention_positive'] ? "POSITIVE" : "negative" ) . ")\n";
-		$body .= "Hyperactivity/Impulsivity: {$scores['hyperactivity_count']}/9 items rated 2-3 ";
-		$body .= "(" . ( $scores['hyperactivity_positive'] ? "POSITIVE" : "negative" ) . ")\n\n";
-		$body .= "Clinical Interpretation: {$interpretation}\n\n";
-		$body .= "See attached files for complete results.\n";
-
-		// Attachments
-		$attachments = array( "vanderbilt_results.xml", "vanderbilt_summary.txt" );
-
-		// Send email
-		wp_mail( $to, $subject, $body, $headers, $attachments );
-
-		// Clean up
-		@unlink( "vanderbilt_results.xml" );
-		@unlink( "vanderbilt_summary.txt" );
-	}
-}
+// Submission transport is shared in clinical-form-mail.php.
 
 /**
  * Calculate Vanderbilt scores and determine clinical significance
@@ -126,6 +49,18 @@ function calculate_vanderbilt_scores( $data ) {
 		'q17_difficulty_waiting',
 		'q18_interrupts'
 	);
+
+	// Missing or malformed answers are not a zero score. Accept the native form's
+	// labels or their explicit numeric pipe values, never arrays or numeric prefixes.
+	$ratings = array('0' => 0, '0 - Never' => 0, '1' => 1, '1 - Occasionally' => 1,
+		'2' => 2, '2 - Often' => 2, '3' => 3, '3 - Very Often' => 3);
+	foreach (array_merge($inattention_items, $hyperactivity_items) as $item) {
+		$value = $data[$item] ?? null;
+		if (!is_string($value) || !array_key_exists($value, $ratings)) {
+			throw new UnexpectedValueException('Every Vanderbilt item requires an explicit valid rating');
+		}
+		$data[$item] = $ratings[$value];
+	}
 
 	// Count items rated 2 or 3 for inattention
 	$inattention_count = 0;
