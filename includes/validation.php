@@ -5,14 +5,14 @@ function gcm_enqueue_validation_js() {
 	$limit_prefixes = function_exists('get_field') ? get_field( 'character_limit_class_prefix', 'options' ) : array();
 	
 	$settings = array(
-		'methods' => $methods,
-		'min_prefix' => $limit_prefixes['min_length'] ?? '',
-		'max_prefix' => $limit_prefixes['max_length'] ?? '',
-		'debug_mode' => current_user_can('administrator') ? 1 : 0,
+		'methods' => is_array($methods) ? array_values(array_filter($methods, 'is_array')) : array(),
+		'min_prefix' => is_array($limit_prefixes) && is_string($limit_prefixes['min_length'] ?? null) ? $limit_prefixes['min_length'] : '',
+		'max_prefix' => is_array($limit_prefixes) && is_string($limit_prefixes['max_length'] ?? null) ? $limit_prefixes['max_length'] : '',
 	);
 	
-	// Enqueue validation.js
-	wp_enqueue_script( 'gcm-validation', GCM_URL . '/assets/validation.js', array( 'jquery' ), GCM_VERSION );
+	// Optional DOM hints: no jQuery/CF7 API dependency or PHI console logging.
+	$version = GCM_VERSION . '.' . substr(hash_file('sha256', dirname(__DIR__) . '/assets/validation.js'), 0, 12);
+	wp_enqueue_script( 'gcm-validation', GCM_URL . '/assets/validation.js', array(), $version, array('in_footer' => true, 'strategy' => 'defer') );
 	
 	// Include data for validation.js
 	wp_localize_script( 'gcm-validation', 'gcm_validation_settings', $settings );

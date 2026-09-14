@@ -1,0 +1,11 @@
+{
+  "name": "development-medical-plugin-tests",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "test:native": "node --test tests/cf7-native.cjs"
+  },
+  "devDependencies": {
+    "jsdom": "^30.0.1"
+  }
+}

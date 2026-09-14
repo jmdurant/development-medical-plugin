@@ -92,7 +92,7 @@ function gcm_display_general_settings_page() {
 	?>
 	<div class="wrap">
 		<h1>General Settings</h1>
-		<p>Activate the plugin "Advanced Custom Field Pro" to enable theme settings.</p>
+		<p>Activate Secure Custom Fields to enable theme settings.</p>
 	</div>
 	<?php
 }

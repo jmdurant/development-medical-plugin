@@ -21,6 +21,10 @@ Built by James DuRant, using PHPStorm.
 
 Not needed. The plugin does not contain any compiled scripts.
 
+Development-only JavaScript checks use `npm ci --ignore-scripts` and `npm test`;
+Node and `node_modules` are not deployed. See [FORM-VALIDATION.md](FORM-VALIDATION.md)
+for validation ownership, optional settings and the actual-CF7 fixture replay.
+
 ## Website installation acceptance
 
 Practice Stack resolves the latest stable Secure Custom Fields and Contact Form 7 before
